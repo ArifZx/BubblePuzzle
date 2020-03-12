@@ -5,11 +5,14 @@ import GroupGlobal from "../global/groupGlobal";
 class Bubble extends Phaser.Physics.Arcade.Sprite {
 
   context: Bubble;
+  isSnaped: boolean;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, options.bubble.texture);
     scene.add.existing(this);
     scene.physics.add.existing(this);
+
+    this.isSnaped = false;
 
     this.setColor(options.bubble.color[0]);
     this.setScale(options.bubble.scale);
@@ -24,11 +27,7 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
     let bubbleGroup = GroupGlobal.getGroup('bubble');
     bubbleGroup.add(this);
 
-    scene.physics.add.collider(this, bubbleGroup, (obj1, obj2) => {
-      // @ts-ignore
-      obj1.stop();
-      obj2.stop();
-    }, null, this);
+    scene.physics.add.collider(this, bubbleGroup, this.collide, null, this);
   }
 
   setContext(context?:Bubble) {
@@ -47,6 +46,11 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
     this.context.setImmovable(true);
 
     this.context.setVelocity(0, 0);
+  }
+
+  collide(obj1: Bubble, obj2: Bubble) {
+    obj1.isSnaped = true;
+    obj2.isSnaped = true;
   }
 
   setRandomColor(context?: Bubble) {

@@ -20,7 +20,8 @@
   },
   "homepage": "https://github.com/ArifZx/BubblePuzzle#readme",
   "devDependencies": {
-    "http-server": "^0.12.1",
+    "live-server": "^1.2.1",
+    "phaser": "^3.22.0",
     "ts-loader": "^6.2.1",
     "typescript": "^3.8.3",
     "webpack": "^4.42.0",

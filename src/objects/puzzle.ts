@@ -146,16 +146,17 @@ class Puzzle extends Phaser.GameObjects.GameObject {
     return this.getNeighborsFunction(bubble, "lower");
   }
 
-  traceBubble(bubble: Bubble): Bubble[] {
+  traceBubble(bubble: Bubble, sameColor = true): Bubble[] {
     const processed: { [id: string]: Bubble } = {};
     const unprocessed: Bubble[] = bubble ? [bubble] : [];
 
     while (unprocessed.length) {
       const processingBubble = unprocessed.shift();
       processed[processingBubble.id] = processingBubble;
-      this.getNeighborsSameColor(processingBubble)
-        .filter(v => !processed[v.id])
-        .forEach(v => unprocessed.push(v));
+      const neighbors = sameColor
+        ? this.getNeighborsSameColor(processingBubble)
+        : this.getNeighbors(processingBubble);
+      neighbors.filter(v => !processed[v.id]).forEach(v => unprocessed.push(v));
     }
 
     return Object.keys(processed).map(key => processed[key]);

@@ -35,6 +35,7 @@ class GameScene extends Phaser.Scene {
               delay: 200 * i,
               callbackScope: this,
               callback: () => {
+                console.log(v.y);
                 v.pop(() => {
                   puzzle.removeBubble(v);
                 });

@@ -17,19 +17,34 @@ class GameScene extends Phaser.Scene {
     let puzzle = new Puzzle(this);
     puzzle.generateBubbles();
 
-    this.input.on('pointerdown', (pointer) => {
-      // console.log();
-      const rowCol = puzzle.getRowCol(pointer.x, pointer.y);
-      const bubble = puzzle.getBubbleByRowCol(rowCol);
-      console.log( pointer.x, pointer.y, rowCol, bubble && 'ADA' || 'KOSONG');
-      if(bubble) {
-        bubble.pop(() => {
-          console.log(puzzle.getNeighborsSameColor(bubble).map(v => v.color.toString(16)));
-          puzzle.removeBubble(bubble);
-        });
-      }
-
-    }, this)
+    this.input.on(
+      "pointerdown",
+      pointer => {
+        // console.log();
+        const rowCol = puzzle.getRowCol(pointer.x, pointer.y);
+        const bubble = puzzle.getBubbleByRowCol(rowCol);
+        console.log(
+          pointer.x,
+          pointer.y,
+          rowCol,
+          (bubble && "ADA") || "KOSONG"
+        );
+        if (bubble) {
+          puzzle.traceBubble(bubble).forEach((v, i) => {
+            this.time.addEvent({
+              delay: 200 * i,
+              callbackScope: this,
+              callback: () => {
+                v.pop(() => {
+                  puzzle.removeBubble(v);
+                });
+              }
+            })
+          });
+        }
+      },
+      this
+    );
 
     // this.time.addEvent({
     //   delay: 3000,

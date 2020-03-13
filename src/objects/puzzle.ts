@@ -50,14 +50,14 @@ class Puzzle extends Phaser.GameObjects.GameObject {
   preUpdate() {}
 
   getBubble(row: number, column: number) {
-    if(row >= 0 && column >= 0 && row < this.rows && column  < this.columns) {
+    if (row >= 0 && column >= 0 && row < this.rows && column < this.columns) {
       return this.bubbles[row][column];
     }
 
     return null;
   }
 
-  getBubbleByRowCol(rowCol: {row: number, column: number}) {
+  getBubbleByRowCol(rowCol: { row: number; column: number }) {
     return this.getBubble(rowCol.row, rowCol.column);
   }
 
@@ -118,7 +118,7 @@ class Puzzle extends Phaser.GameObjects.GameObject {
           const row = rowCol.row + value[1];
           const column = rowCol.column + value[0];
           const temp = this.getBubble(row, column);
-          if(temp) {
+          if (temp) {
             neighbors.push(temp);
           }
         }
@@ -133,7 +133,9 @@ class Puzzle extends Phaser.GameObjects.GameObject {
   }
 
   getNeighborsSameColor(bubble: Bubble) {
-    return this.getNeighbors(bubble).filter(value => value.color === bubble.color);
+    return this.getNeighbors(bubble).filter(
+      value => value.color === bubble.color
+    );
   }
 
   getUpperNeighbors(bubble: Bubble) {
@@ -142,6 +144,21 @@ class Puzzle extends Phaser.GameObjects.GameObject {
 
   getLowerNeighbors(bubble: Bubble) {
     return this.getNeighborsFunction(bubble, "lower");
+  }
+
+  traceBubble(bubble: Bubble): Bubble[] {
+    const processed: { [id: string]: Bubble } = {};
+    const unprocessed: Bubble[] = bubble ? [bubble] : [];
+
+    while (unprocessed.length) {
+      const processingBubble = unprocessed.shift();
+      processed[processingBubble.id] = processingBubble;
+      this.getNeighborsSameColor(processingBubble)
+        .filter(v => !processed[v.id])
+        .forEach(v => unprocessed.push(v));
+    }
+
+    return Object.keys(processed).map(key => processed[key]);
   }
 
   setOverlap(bubble: Bubble, context?: Puzzle) {
@@ -178,7 +195,7 @@ class Puzzle extends Phaser.GameObjects.GameObject {
   }
 
   getRowCol(x: number, y: number): { row: number; column: number } {
-    let temp = { row: 0, column: 0};
+    let temp = { row: 0, column: 0 };
 
     temp.row = Math.min(
       Math.round((y + this.tileHeight * 0.5) / this.tileHeight - 1),

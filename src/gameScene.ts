@@ -17,10 +17,6 @@ class GameScene extends Phaser.Scene {
     let puzzle = new Puzzle(this);
     puzzle.generateBubbles();
 
-    // let bubble = new Bubble(this, 1000, 1000);
-    // puzzle.followBubble = bubble;
-    // puzzle.setOverlap(bubble, puzzle);
-
     this.input.on('pointerdown', (pointer) => {
       // console.log();
       const rowCol = puzzle.getRowCol(pointer.x, pointer.y);
@@ -28,7 +24,7 @@ class GameScene extends Phaser.Scene {
       console.log( pointer.x, pointer.y, rowCol, bubble && 'ADA' || 'KOSONG');
       if(bubble) {
         bubble.pop(() => {
-          console.log(puzzle.getNeighbors(bubble).map(v => v.color.toString(16)));
+          console.log(puzzle.getNeighborsSameColor(bubble).map(v => v.color.toString(16)));
           puzzle.removeBubble(bubble);
         });
       }

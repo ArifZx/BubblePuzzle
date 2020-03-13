@@ -117,8 +117,9 @@ class Puzzle extends Phaser.GameObjects.GameObject {
         if (isOK) {
           const row = rowCol.row + value[1];
           const column = rowCol.column + value[0];
-          if(this.bubbles[row][column]) {
-            neighbors.push(this.bubbles[row][column])
+          const temp = this.getBubble(row, column);
+          if(temp) {
+            neighbors.push(temp);
           }
         }
       });
@@ -129,6 +130,10 @@ class Puzzle extends Phaser.GameObjects.GameObject {
 
   getNeighbors(bubble: Bubble) {
     return this.getNeighborsFunction(bubble, "normal");
+  }
+
+  getNeighborsSameColor(bubble: Bubble) {
+    return this.getNeighbors(bubble).filter(value => value.color === bubble.color);
   }
 
   getUpperNeighbors(bubble: Bubble) {

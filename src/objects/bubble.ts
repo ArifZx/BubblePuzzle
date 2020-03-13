@@ -7,6 +7,7 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
   color: number;
   isPoped = false;
   isDroped = false;
+  id: string;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, options.bubble.texture.name);
@@ -14,6 +15,7 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this);
 
     this.isSnaped = false;
+    this.id = Phaser.Utils.String.UUID();
 
     this.setColor(options.bubble.color[0]);
     this.setScale(0.75);

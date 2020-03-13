@@ -9,20 +9,21 @@ class PreloadScene extends Phaser.Scene {
   }
 
   preload(): void {
-    this.load.spritesheet(options.bubble.texture, options.bubble.location, {
-      frameWidth: options.bubble.size,
-      frameHeight: options.bubble.size
+    this.load.spritesheet(options.bubble.texture.name, options.bubble.texture.location, {
+      frameWidth: options.bubble.texture.height,
+      frameHeight: options.bubble.texture.height,
     });
   }
 
   create(): void {
     this.anims.create({
       key: options.bubble.animation.pop,
-      frames: this.anims.generateFrameNumbers(options.bubble.texture, {
+      frames: this.anims.generateFrameNumbers(options.bubble.texture.name, {
         start: 0,
-        end: 5
+        end: 5,
       }),
-      repeat: 1,
+      frameRate: 24,
+      repeat: -1,
     });
 
     this.scene.start("GameScene");

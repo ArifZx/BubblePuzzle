@@ -1,12 +1,12 @@
-import "phaser"
-import Bubble from "./objects/bubble"
-import GroupGlobal from "./global/groupGlobal";
+import "phaser";
+import Bubble from "./objects/bubble";
+import Puzzle from "./objects/puzzle";
 
 class GameScene extends Phaser.Scene {
   constructor() {
     super({
       key: "GameScene"
-    })
+    });
   }
 
   bubble: Bubble;
@@ -14,20 +14,49 @@ class GameScene extends Phaser.Scene {
   init(data): void {}
 
   create(): void {
+    let puzzle = new Puzzle(this);
+    puzzle.generateBubbles();
 
-    GroupGlobal.setupGroup(this, 'bubble');
-  
-    this.bubble = new Bubble(this, 100, 100);
-    this.bubble.setVelocity(1000, 300);
+    // let bubble = new Bubble(this, 1000, 1000);
+    // puzzle.followBubble = bubble;
+    // puzzle.setOverlap(bubble, puzzle);
 
-    let bubble = new Bubble(this, 100, 500);
-    // bubble.setVelocity(200, 1000);
+    this.input.on('pointerdown', (pointer) => {
+      // console.log();
+      const rowCol = puzzle.getRowCol(pointer.x, pointer.y);
+      const bubble = puzzle.getBubbleByRowCol(rowCol);
+      console.log( pointer.x, pointer.y, rowCol, bubble && 'ADA' || 'KOSONG');
+      if(bubble) {
+        bubble.pop(() => {
+          console.log(puzzle.getNeighbors(bubble).map(v => v.color.toString(16)));
+          puzzle.removeBubble(bubble);
+        });
+      }
 
-    let bubble2 = new Bubble(this, 100, 200);
-    // bubble2.setVelocity(1213, 1233);
+    }, this)
 
-    // this.physics.add.collider()
+    // this.time.addEvent({
+    //   delay: 3000,
+    //   callback: () => {
+    //     puzzle.bubbles.forEach(bubbles => {
+    //       bubbles.forEach(bubble => {
+    //         bubble && bubble.drop(() => {
+    //           puzzle.removeBubble(bubble);
+    //         });
+    //       });
+    //     });
+    //   },
+    //   loop: false
+    // });
+
+    // this.time.addEvent({
+    //   delay: 5000,
+    //   callback: () => {
+    //     console.log(puzzle.bubbles);
+    //   },
+    //   loop: false
+    // });
   }
 }
 
-export default GameScene
+export default GameScene;

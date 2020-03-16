@@ -1,0 +1,156 @@
+import options from "../options";
+import Bubble from "./bubble";
+import Puzzle from "./puzzleManager";
+
+class BubbleLauncher extends Phaser.GameObjects.Rectangle {
+  touchPosition: Phaser.Math.Vector2;
+  isTracing: boolean;
+  isReady: boolean;
+  arrow: Phaser.GameObjects.Sprite;
+  line: Phaser.Geom.Line;
+  graphics: Phaser.GameObjects.Graphics;
+  launchSpeed: number;
+
+  puzzle: Puzzle;
+  currentBubble: Bubble;
+
+  constructor(scene: Phaser.Scene, x: number, y: number, puzzle: Puzzle) {
+    const { width, height } = scene.game.config;
+
+    super(scene, x, y, width as number, 0.25 * (height as number), 0x7f6388);
+
+    this.isTracing = false;
+    this.isReady = true;
+    this.touchPosition = null;
+    this.puzzle = puzzle;
+    this.launchSpeed = 2000;
+
+    this.setOrigin(0.5, 0);
+
+    scene.sys.updateList.add(this);
+    scene.add.existing(this);
+
+    this.arrow = scene.add.sprite(x, y, options.arrow.texture.name);
+    this.arrow.setDepth(2);
+    this.arrow.setAlpha(0);
+
+    this.graphics = this.scene.add.graphics();
+    this.line = new Phaser.Geom.Line();
+
+    this.generateBubble();
+
+    this.setInteractive()
+      .on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+        this.showArrow();
+        this.startTracing(pointer);
+      })
+      .on("pointerup", (pointer: Phaser.Input.Pointer) => {
+        this.hideArrow();
+        if (this.isTracing) {
+          this.launch(new Phaser.Math.Vector2(pointer.position));
+        }
+
+        this.stopTracing();
+      })
+      .on("pointerout", () => {
+        this.stopTracing();
+      })
+      .on("pointerover", () => {
+        this.stopTracing();
+      })
+      .on("pointermove", (pointer: Phaser.Input.Pointer) => {
+        if (this.isTracing) {
+          this.trace(pointer);
+        }
+
+        this.redraw();
+      });
+  }
+
+  redraw() {
+    this.graphics.clear();
+
+    this.graphics.lineStyle(5, 0xffffff, this.isTracing ? 1 : 0);
+    this.graphics.strokeLineShape(this.line);
+  }
+
+  generateBubble() {
+    if (!this.currentBubble && this.isReady) {
+      this.isReady = false;
+      const generatedBubble = new Bubble(this.scene, this.x, this.y);
+      this.currentBubble = generatedBubble;
+      this.currentBubble.setRandomColor();
+
+      this.scene.time.delayedCall(100, () =>
+        this.emit("generatedBubble", generatedBubble)
+      );
+
+      this.scene.time.delayedCall(
+        500,
+        () => {
+          this.isReady = true;
+        },
+        null,
+        this
+      );
+    }
+  } 
+
+  preUpdate() {}
+
+  showArrow() {
+    this.arrow && this.arrow.setAlpha(1);
+  }
+
+  hideArrow() {
+    this.arrow && this.arrow.setAlpha(0);
+  }
+
+  launch(endPosition: Phaser.Math.Vector2) {
+    this.isTracing = false;
+
+    if (this.currentBubble) {
+      const direction = new Phaser.Math.Vector2(
+        endPosition.x - this.x,
+        endPosition.y - this.y
+      ).normalize();
+
+      this.currentBubble.setVelocity(-direction.x * this.launchSpeed, -direction.y * this.launchSpeed);
+      const bubble = this.currentBubble;
+      
+      this.scene.time.delayedCall(60, () => this.emit('launchedBubble', bubble));
+    }
+    
+    this.scene.time.delayedCall(60, () => {
+      this.stopTracing();
+    });
+    this.currentBubble = null;
+  }
+
+  release() {
+    this.touchPosition = null;
+  }
+
+  startTracing(pointer: Phaser.Input.Pointer) {
+    this.isTracing = true;
+    this.touchPosition = pointer.position;
+    this.trace(pointer);
+    this.redraw();
+  }
+
+  stopTracing() {
+    this.isTracing = false;
+    this.release();
+    this.redraw();
+  }
+
+  trace(pointer) {
+    const degree =
+      Phaser.Math.Angle.Between(this.x, this.y, pointer.x, pointer.y) *
+      Phaser.Math.RAD_TO_DEG;
+    this.arrow.setAngle(degree - 90);
+    this.line.setTo(this.x, this.y, pointer.x, pointer.y);
+  }
+}
+
+export default BubbleLauncher;

@@ -13,6 +13,8 @@ class PreloadScene extends Phaser.Scene {
       frameWidth: options.bubble.texture.height,
       frameHeight: options.bubble.texture.height,
     });
+
+    this.load.image(options.arrow.texture.name, options.arrow.texture.location);
   }
 
   create(): void {

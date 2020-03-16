@@ -10,6 +10,14 @@ const options = {
     animation: {
       pop: "pop"
     }
+  },
+  arrow: {
+    texture: {
+      name: 'arrow',
+      location: '/assets/arrow.png',
+      height: 300,
+      width: 300,
+    }
   }
 }
 

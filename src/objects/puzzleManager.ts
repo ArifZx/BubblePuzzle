@@ -1,7 +1,16 @@
 import Bubble from "./bubble";
 
-class Puzzle extends Phaser.GameObjects.GameObject {
+type RowCol = {
+  row: number;
+  column: number;
+};
+
+class PuzzleManager extends Phaser.GameObjects.GameObject {
   bubbles: Array<Array<Bubble>>;
+  launchBubble: Bubble;
+  launchBubbleRowCol: RowCol;
+  isSnapping: boolean;
+
   neighborsOffsets = [
     [
       [1, 0],
@@ -29,12 +38,11 @@ class Puzzle extends Phaser.GameObjects.GameObject {
   tileWidth = 90;
   tileHeight = 90;
 
-  followBubble: Bubble;
-
   constructor(scene: Phaser.Scene) {
     super(scene, "puzzle");
 
     this.bubbles = [];
+    this.isSnapping = false;
     scene.sys.updateList.add(this);
     scene.add.existing(this);
   }
@@ -47,7 +55,72 @@ class Puzzle extends Phaser.GameObjects.GameObject {
     return this.scene && this.scene.game;
   }
 
-  preUpdate() {}
+  preUpdate() {
+    if (this.launchBubble) {
+      if (this.launchBubble.y <= this.tileHeight * 0.5 + 1) {
+        this.launchBubble.setVelocity(0);
+        this.launchBubble = null;
+      }
+    }
+  }
+
+  setLaunchBubble(bubble: Bubble, context?: PuzzleManager) {
+    const ctx = context || this;
+    ctx.launchBubble = bubble;
+
+    ctx.setOverlap(bubble, current => ctx.snapBubble(current), ctx);
+  }
+
+  snapBubble(bubble: Bubble) {
+    console.log("MASUK");
+    if (!this.isSnapping && !this.launchBubbleRowCol) {
+      // once snaping
+      this.isSnapping = true;
+      bubble.setVelocity(0);
+      bubble.setAcceleration(0);
+      const rowCol = this.getBubbleRowCol(bubble);
+      this.launchBubbleRowCol = rowCol;
+      this.bubbles[rowCol.row][rowCol.column] = bubble;
+      const coord = this.getCoordinate(rowCol.row, rowCol.column);
+      bubble.setImmovable(true);
+
+      this.scene.time.delayedCall(100, () => {
+        bubble.setX(coord.x);
+        bubble.setY(coord.y);
+
+        const sameNeighbors = this.traceBubble(bubble, true);
+        const isPoped = sameNeighbors.length >= 3;
+        if (isPoped) {
+          sameNeighbors.forEach(v => {
+            v.pop();
+            this.removeBubble(v);
+          });
+        }
+
+        this.scene.time.delayedCall(sameNeighbors.length * 200, () =>
+          this.emit("poppedBubbles", isPoped, sameNeighbors.length >= 3 ? sameNeighbors : [])
+        );
+      });
+
+      this.scene.time.delayedCall(
+        Phaser.Math.Between(200, 500),
+        () => {
+          this.launchBubbleRowCol = null;
+          this.isSnapping = false;
+          this.emit("snapBubble", bubble);
+        },
+        null,
+        this
+      );
+    }
+
+    if (this.launchBubbleRowCol) {
+      const rowCol = this.launchBubbleRowCol;
+      const coord = this.getCoordinate(rowCol.row, rowCol.column);
+      bubble.setX(coord.x);
+      bubble.setY(coord.y);
+    }
+  }
 
   getBubble(row: number, column: number) {
     if (row >= 0 && column >= 0 && row < this.rows && column < this.columns) {
@@ -57,7 +130,7 @@ class Puzzle extends Phaser.GameObjects.GameObject {
     return null;
   }
 
-  getBubbleByRowCol(rowCol: { row: number; column: number }) {
+  getBubbleByRowCol(rowCol: RowCol) {
     return this.getBubble(rowCol.row, rowCol.column);
   }
 
@@ -70,6 +143,7 @@ class Puzzle extends Phaser.GameObjects.GameObject {
           const coord = this.getCoordinate(row, column);
           const bubble = new Bubble(this.scene, coord.x, coord.y);
           bubble.setRandomColor();
+          bubble.setImmovable(true);
           this.bubbles[row][column] = bubble;
         } else {
           this.bubbles[row][column] = undefined;
@@ -89,6 +163,7 @@ class Puzzle extends Phaser.GameObjects.GameObject {
     this.bubbles[Math.max(0, row)][Math.max(0, column)] = null;
   }
 
+  // Neighbourhood
   private getNeighborsFunction(
     bubble: Bubble,
     type: "normal" | "upper" | "lower" | "sibling"
@@ -146,6 +221,11 @@ class Puzzle extends Phaser.GameObjects.GameObject {
     return this.getNeighborsFunction(bubble, "lower");
   }
 
+  /**
+   * Trace connected bubbles
+   * @param bubble
+   * @param sameColor
+   */
   traceBubble(bubble: Bubble, sameColor = true): Bubble[] {
     const processed: { [id: string]: Bubble } = {};
     const unprocessed: Bubble[] = bubble ? [bubble] : [];
@@ -156,26 +236,97 @@ class Puzzle extends Phaser.GameObjects.GameObject {
       const neighbors = sameColor
         ? this.getNeighborsSameColor(processingBubble)
         : this.getNeighbors(processingBubble);
-      neighbors.filter(v => !processed[v.id]).forEach(v => unprocessed.push(v));
+      neighbors.forEach(v => {
+        if (!processed[v.id]) {
+          unprocessed.push(v);
+        }
+      });
     }
 
     return Object.keys(processed).map(key => processed[key]);
   }
 
-  setOverlap(bubble: Bubble, context?: Puzzle) {
+  // Floating Bubble
+
+  private isFloatingBubble(bubble: Bubble): boolean {
+    return bubble && bubble.y > this.tileHeight * 0.5;
+  }
+
+  getAllFloatingBubble(): Array<Array<Bubble>> {
+    const floatingBubbles = [];
+    const processedSign: { [id: string]: boolean } = {};
+
+    this.bubbles.forEach((bubbles, i) => {
+      if (i) {
+        // skip first bubbles
+        bubbles.forEach(bubble => {
+          if (bubble && !processedSign[bubble.id]) {
+            // if bubbles is not processed
+            let isFloating = true;
+            const trace = this.traceBubble(bubble, false); // trace connected bubbles
+            trace.forEach(v => {
+              if (isFloating) {
+                isFloating = this.isFloatingBubble(v);
+              }
+              processedSign[v.id] = true;
+            });
+
+            if (isFloating) {
+              floatingBubbles.push(trace);
+            }
+          }
+        });
+      }
+    });
+
+    return floatingBubbles;
+  }
+
+  dropAllFloatingBubbles() {
+    const floatingBubbles = this.getAllFloatingBubble();
+    floatingBubbles.forEach(group => {
+      group.forEach(bubble => {
+        bubble.drop(false);
+      });
+    });
+
+    return floatingBubbles;
+  }
+
+  /**
+   * set overlap collision bubble to all bubbles
+   * @param bubble
+   * @param context
+   */
+  setOverlap(
+    bubble: Bubble,
+    callback?: (current: Bubble, other: Bubble) => void,
+    context?: PuzzleManager
+  ) {
     const ctx = context || this;
-    console.log(ctx.bubbles);
     ctx.bubbles.forEach(bubbles => {
-      ctx.scene.physics.add.overlap(
-        bubble,
-        bubbles,
-        ctx.bubbleOverlapHandler,
-        null,
-        this
-      );
+      bubbles.forEach(currentBubble => {
+        currentBubble &&
+          ctx.scene.physics.add.overlap(
+            bubble,
+            currentBubble,
+            callback,
+            null,
+            this
+          );
+      });
     });
   }
 
+  bubbleOverlapHandler(bubble: Bubble) {
+    // console.log(this.getRowCol(bubble.x, bubble.y));
+  }
+
+  /**
+   * Get coordinate position bubble by row and cols number
+   * @param row
+   * @param column
+   */
   getCoordinate(row: number, column: number): Phaser.Math.Vector2 {
     let temp = new Phaser.Math.Vector2();
     temp.x = (column + 1) * this.tileWidth - this.tileWidth * 0.5;
@@ -188,6 +339,10 @@ class Puzzle extends Phaser.GameObjects.GameObject {
     return temp;
   }
 
+  /**
+   * Get bubble's row and column number
+   * @param bubble
+   */
   getBubbleRowCol(bubble: Bubble) {
     if (!bubble) {
       return { row: 0, column: 0 };
@@ -195,7 +350,12 @@ class Puzzle extends Phaser.GameObjects.GameObject {
     return this.getRowCol(bubble.x, bubble.y);
   }
 
-  getRowCol(x: number, y: number): { row: number; column: number } {
+  /**
+   * Get rowCol number by coordinate prosition
+   * @param x
+   * @param y
+   */
+  getRowCol(x: number, y: number): RowCol {
     let temp = { row: 0, column: 0 };
 
     temp.row = Math.min(
@@ -215,10 +375,6 @@ class Puzzle extends Phaser.GameObjects.GameObject {
 
     return temp;
   }
-
-  bubbleOverlapHandler(bubble: Bubble) {
-    // console.log(this.getRowCol(bubble.x, bubble.y));
-  }
 }
 
-export default Puzzle;
+export default PuzzleManager;

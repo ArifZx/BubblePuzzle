@@ -21,7 +21,7 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
     this.setScale(0.75);
     this.setDepth(1);
 
-    this.setCircle(59, 30, 30);
+    this.setCircle(61, 30, 30);
     this.setCollideWorldBounds(true);
     this.setBounce(1);
 
@@ -66,18 +66,20 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  drop(callback?: () => void, context?: Bubble) {
+  drop(withPop = true, callback?: () => void, context?: Bubble) {
     if (!this.isDroped) {
       this.setContext(context);
       this.context.setGravityY(500);
-      this.context.scene.time.addEvent({
-        delay: Phaser.Math.Between(250, 500),
-        callback: () => {
-          this.context.pop();
-        },
-        loop: false,
-        callbackScope: this
-      });
+      if(withPop) {
+        this.context.scene.time.addEvent({
+          delay: Phaser.Math.Between(450, 800),
+          callback: () => {
+            this.context.pop();
+          },
+          loop: false,
+          callbackScope: this
+        });
+      }
     }
 
     this.isDroped = true;

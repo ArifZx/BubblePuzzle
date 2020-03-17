@@ -45,17 +45,17 @@ class GameScene extends Phaser.Scene {
 
     this.add.existing(this.fpsText);
 
-    this.input.on(
-      "pointerdown",
-      pointer => {
-        const rowCol = puzzle.getRowCol(pointer.x, pointer.y);
-        const bubble = puzzle.getBubbleByRowCol(rowCol);
-        if (bubble) {
-          puzzle.snapBubble(bubble, 1);
-        }
-      },
-      this
-    );
+    // this.input.on(
+    //   "pointerdown",
+    //   pointer => {
+    //     const rowCol = puzzle.getRowCol(pointer.x, pointer.y);
+    //     const bubble = puzzle.getBubbleByRowCol(rowCol);
+    //     if (bubble) {
+    //       puzzle.snapBubble(bubble, 1);
+    //     }
+    //   },
+    //   this
+    // );
 
     const launcher = new BubbleLauncher(
       this,

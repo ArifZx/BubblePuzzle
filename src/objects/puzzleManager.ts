@@ -72,7 +72,6 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
   }
 
   snapBubble(bubble: Bubble) {
-    console.log("MASUK");
     if (!this.isSnapping && !this.launchBubbleRowCol) {
       // once snaping
       this.isSnapping = true;
@@ -82,9 +81,8 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
       this.launchBubbleRowCol = rowCol;
       this.bubbles[rowCol.row][rowCol.column] = bubble;
       const coord = this.getCoordinate(rowCol.row, rowCol.column);
-      bubble.setImmovable(true);
 
-      this.scene.time.delayedCall(100, () => {
+      this.scene.time.delayedCall(10, () => {
         bubble.setX(coord.x);
         bubble.setY(coord.y);
 
@@ -97,13 +95,17 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
           });
         }
 
-        this.scene.time.delayedCall(sameNeighbors.length * 200, () =>
-          this.emit("poppedBubbles", isPoped, sameNeighbors.length >= 3 ? sameNeighbors : [])
+        this.scene.time.delayedCall(sameNeighbors.length * 100, () =>
+          this.emit(
+            "poppedBubbles",
+            isPoped,
+            sameNeighbors.length >= 3 ? sameNeighbors : []
+          )
         );
       });
 
       this.scene.time.delayedCall(
-        Phaser.Math.Between(200, 500),
+        100,
         () => {
           this.launchBubbleRowCol = null;
           this.isSnapping = false;
@@ -143,7 +145,6 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
           const coord = this.getCoordinate(row, column);
           const bubble = new Bubble(this.scene, coord.x, coord.y);
           bubble.setRandomColor();
-          bubble.setImmovable(true);
           this.bubbles[row][column] = bubble;
         } else {
           this.bubbles[row][column] = undefined;
@@ -287,6 +288,7 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
     floatingBubbles.forEach(group => {
       group.forEach(bubble => {
         bubble.drop(false);
+        this.removeBubble(bubble);
       });
     });
 

@@ -11,12 +11,21 @@ class GameScene extends Phaser.Scene {
   }
 
   bubble: Bubble;
+  fpsText: Phaser.GameObjects.Text;
 
   init(data): void {}
 
   create(): void {
     let puzzle = new Puzzle(this);
     puzzle.generateBubbles();
+    this.fpsText = new Phaser.GameObjects.Text(this, 0, (this.game.config.height as number) - 50, "00", {
+      color: "#FFFFFF",
+      fontSize: "48px"
+    });
+
+    this.fpsText.setDepth(5);
+
+    this.add.existing(this.fpsText);
 
     this.input.on(
       "pointerdown",
@@ -68,7 +77,7 @@ class GameScene extends Phaser.Scene {
     });
 
     puzzle.on("snapBubble", () => {
-      console.log("snap");
+      console.log("snap and generate bubble");
       launcher.generateBubble();
     });
 
@@ -78,6 +87,10 @@ class GameScene extends Phaser.Scene {
         console.log(puzzle.dropAllFloatingBubbles());
       }
     })
+  }
+
+  update(): void {
+    this.fpsText.setText(this.game.loop.actualFps.toFixed(2).toString());
   }
 }
 

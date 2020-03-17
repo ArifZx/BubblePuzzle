@@ -38,6 +38,9 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
   tileWidth = 90;
   tileHeight = 90;
 
+  private _scene: Phaser.Scene;
+  private _time: Phaser.Time.Clock;
+
   constructor(scene: Phaser.Scene) {
     super(scene, "puzzle");
 
@@ -45,20 +48,23 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
     this.isSnapping = false;
     scene.sys.updateList.add(this);
     scene.add.existing(this);
-  }
-
-  get gameConfig(): Phaser.Core.Config {
-    return this.scene && this.scene.game.config;
+    this._scene = scene;
+    this._time = scene.time;
   }
 
   get game(): Phaser.Game {
-    return this.scene && this.scene.game;
+    return this._scene && this._scene.game;
+  }
+
+  get gameConfig(): Phaser.Core.Config {
+    return this.game && this.game.config;
   }
 
   preUpdate() {
     if (this.launchBubble) {
       if (this.launchBubble.y <= this.tileHeight * 0.5 + 1) {
         this.launchBubble.setVelocity(0);
+        this.snapBubble(this.launchBubble);
         this.launchBubble = null;
       }
     }
@@ -71,8 +77,9 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
     ctx.setOverlap(bubble, current => ctx.snapBubble(current), ctx);
   }
 
-  snapBubble(bubble: Bubble) {
-    if (!this.isSnapping && !this.launchBubbleRowCol) {
+  snapBubble(bubble: Bubble, minSnap = 3, sameColor = true) {
+    if (!this.isSnapping ) {
+      const min = Math.max(minSnap, 1);
       // once snaping
       this.isSnapping = true;
       bubble.setVelocity(0);
@@ -86,25 +93,25 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
         bubble.setX(coord.x);
         bubble.setY(coord.y);
 
-        const sameNeighbors = this.traceBubble(bubble, true);
-        const isPoped = sameNeighbors.length >= 3;
+        const neighbors = this.traceBubble(bubble, sameColor);
+        const isPoped = neighbors.length >= min;
         if (isPoped) {
-          sameNeighbors.forEach(v => {
-            v.pop();
+          neighbors.forEach((v, i) => {
+            this._time.delayedCall(100 * i, () => v.pop());
             this.removeBubble(v);
           });
         }
 
-        this.scene.time.delayedCall(sameNeighbors.length * 100, () =>
+        this._time.delayedCall(neighbors.length * 100, () =>
           this.emit(
             "poppedBubbles",
             isPoped,
-            sameNeighbors.length >= 3 ? sameNeighbors : []
+            neighbors.length >= min ? neighbors : []
           )
         );
       });
 
-      this.scene.time.delayedCall(
+      this._time.delayedCall(
         100,
         () => {
           this.launchBubbleRowCol = null;
@@ -319,6 +326,7 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
       });
     });
   }
+
 
   bubbleOverlapHandler(bubble: Bubble) {
     // console.log(this.getRowCol(bubble.x, bubble.y));

@@ -6,7 +6,7 @@
   "scripts": {
     "build": "webpack",
     "watch": "./node_modules/.bin/webpack --watch",
-    "serve": "./node_modules/.bin/live-server --port=8085"
+    "serve": "./node_modules/.bin/live-server --port=8085 --host=0.0.0.0"
   },
   "repository": {
     "type": "git",

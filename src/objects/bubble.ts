@@ -1,5 +1,6 @@
 import "phaser";
 import options from "../options";
+import { Physics } from "phaser";
 
 class Bubble extends Phaser.Physics.Arcade.Sprite {
   context: Bubble;
@@ -8,9 +9,15 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
   isPoped = false;
   isDroped = false;
   id: string;
+  collider: Physics.Arcade.Collider;
+
+  private _scene: Phaser.Scene;
+  private _gameHeight: number;
+  private _displayHeight: number;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, options.bubble.texture.name);
+    this._scene = scene;
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
@@ -26,6 +33,23 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
     this.setBounce(1);
 
     this.anims.load(options.bubble.animation.pop);
+    this._gameHeight = this._scene.game.config.height as number;
+    this._displayHeight = this.displayHeight;
+
+    scene.time.addEvent({
+      repeat: -1,
+      delay: 100,
+      callbackScope: this,
+      callback: () => {
+        if(this.y + this._displayHeight > this._gameHeight) {
+          this.pop();
+        }
+      }
+    })
+  }
+
+  preUpdate() {
+    
   }
 
   setContext(context?: Bubble) {
@@ -50,7 +74,7 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
   pop(callback?: () => void) {
     if (!this.isPoped) {
       this.anims.play(options.bubble.animation.pop);
-      this.scene.time.addEvent({
+      this._scene.time.addEvent({
         delay: 200,
         callbackScope: this,
         callback: () => {
@@ -69,10 +93,11 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
   drop(withPop = true, callback?: () => void, context?: Bubble) {
     if (!this.isDroped) {
       this.setContext(context);
+      this.setCollideWorldBounds(false);
       this.context.setGravityY(500);
       if(withPop) {
         this.context.scene.time.addEvent({
-          delay: Phaser.Math.Between(450, 800),
+          delay: Phaser.Math.Between(200, 500),
           callback: () => {
             this.context.pop();
           },

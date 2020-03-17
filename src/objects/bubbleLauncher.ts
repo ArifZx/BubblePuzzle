@@ -14,10 +14,13 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
   puzzle: Puzzle;
   currentBubble: Bubble;
 
+  private _scene: Phaser.Scene;
+
   constructor(scene: Phaser.Scene, x: number, y: number, puzzle: Puzzle) {
     const { width, height } = scene.game.config;
 
     super(scene, x, y, width as number, 0.25 * (height as number), 0x7f6388);
+    this._scene = scene;
 
     this.isTracing = false;
     this.isReady = true;
@@ -33,7 +36,7 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
     this.arrow.setDepth(2);
     this.arrow.setAlpha(0);
 
-    this.graphics = this.scene.add.graphics();
+    this.graphics = this._scene.add.graphics();
     this.line = new Phaser.Geom.Line();
 
     this.generateBubble();
@@ -42,12 +45,12 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
     this.setInteractive()
       .on("pointerdown", (pointer: Phaser.Input.Pointer) => {
         this.startTracing(pointer);
+        this.redraw();
       }, this)
       .on("pointerup", (pointer: Phaser.Input.Pointer) => {
         if (this.isTracing) {
           this.launch(new Phaser.Math.Vector2(pointer.position));
         }
-
         this.stopTracing();
       }, this)
       .on("pointerout", () => {
@@ -57,7 +60,6 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
         if (this.isTracing) {
           this.trace(pointer);
         }
-
         this.redraw();
       }, this);
   }
@@ -72,15 +74,15 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
   generateBubble() {
     if (!this.currentBubble) {
       this.isReady = false;
-      const generatedBubble = new Bubble(this.scene, this.x, this.y);
+      const generatedBubble = new Bubble(this._scene, this.x, this.y);
       this.currentBubble = generatedBubble;
       this.currentBubble.setRandomColor();
 
-      this.scene.time.delayedCall(100, () =>
+      this._scene.time.delayedCall(100, () =>
         this.emit("generatedBubble", generatedBubble)
       );
 
-      this.scene.time.delayedCall(
+      this._scene.time.delayedCall(
         500,
         () => {
           this.isReady = true;
@@ -114,12 +116,12 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
       );
       const bubble = this.currentBubble;
 
-      this.scene.time.delayedCall(60, () =>
+      this._scene.time.delayedCall(60, () =>
         this.emit("launchedBubble", bubble)
       );
     }
 
-    this.scene.time.delayedCall(60, () => {
+    this._scene.time.delayedCall(60, () => {
       this.stopTracing();
     });
     this.currentBubble = null;

@@ -1,7 +1,7 @@
 import "phaser";
-import Bubble from "./objects/bubble";
-import Puzzle from "./objects/puzzleManager";
-import BubbleLauncher from "./objects/bubbleLauncher";
+import Bubble from "../objects/bubble";
+import Puzzle from "../objects/puzzleManager";
+import BubbleLauncher from "../objects/bubbleLauncher";
 
 class GameScene extends Phaser.Scene {
   constructor() {
@@ -41,24 +41,25 @@ class GameScene extends Phaser.Scene {
         // );
         if (bubble) {
           // console.log(bubble.x, bubble.y);
-          const traceBubbles = puzzle.traceBubble(bubble);
+          // const traceBubbles = puzzle.traceBubble(bubble);
 
-          traceBubbles.forEach((v, i) => {
-            this.time.addEvent({
-              delay: 200 * i,
-              callbackScope: this,
-              callback: () => {
-                // console.log(v.y);
-                v.pop(() => {
-                  puzzle.removeBubble(v);
-                });
-              }
-            });
-          });
+          // traceBubbles.forEach((v, i) => {
+          //   this.time.addEvent({
+          //     delay: 200 * i,
+          //     callbackScope: this,
+          //     callback: () => {
+          //       console.log(v.y);
+          //       v.pop(() => {
+          //         puzzle.removeBubble(v);
+          //       });
+          //     }
+          //   });
+          // });
 
-          this.time.delayedCall(200 * traceBubbles.length + 50, () => {
-            console.log(puzzle.dropAllFloatingBubbles());
-          });
+          // this.time.delayedCall(200 * traceBubbles.length + 50, () => {
+          //   console.log(puzzle.dropAllFloatingBubbles());
+          // });
+          puzzle.snapBubble(bubble, 1);
         }
       },
       this
@@ -67,7 +68,7 @@ class GameScene extends Phaser.Scene {
     const launcher = new BubbleLauncher(
       this,
       (this.game.config.width as number) * 0.5,
-      (this.game.config.height as number) * 0.75,
+      (this.game.config.height as number) * 0.8,
       puzzle
     );
 

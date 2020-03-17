@@ -1,6 +1,6 @@
 import "phaser"
 import PreloadScene from "./scenes/preloadScene";
-import GameScene from "./gameScene";
+import GameScene from "./scenes/gameScene";
 
 const config: Phaser.Types.Core.GameConfig = {
   title: "Puzzle Bubble",

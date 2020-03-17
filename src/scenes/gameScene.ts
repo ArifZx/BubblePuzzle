@@ -2,6 +2,7 @@ import "phaser";
 import Bubble from "../objects/bubble";
 import Puzzle from "../objects/puzzleManager";
 import BubbleLauncher from "../objects/bubbleLauncher";
+import Scoreboard from "../objects/scoreboard";
 
 class GameScene extends Phaser.Scene {
   constructor() {
@@ -13,10 +14,12 @@ class GameScene extends Phaser.Scene {
   bubble: Bubble;
   fpsText: Phaser.GameObjects.Text;
 
-  init(data): void {}
+  init(data): void { }
 
   create(): void {
-    let puzzle = new Puzzle(this);
+    const scoreboard = new Scoreboard(this, 0, 0);
+
+    let puzzle = new Puzzle(this, 0, 90);
     puzzle.generateBubbles();
     this.fpsText = new Phaser.GameObjects.Text(this, 0, (this.game.config.height as number) - 50, "00", {
       color: "#FFFFFF",
@@ -79,15 +82,26 @@ class GameScene extends Phaser.Scene {
 
     puzzle.on("snapBubble", (bubble: Bubble, isLastRow: boolean) => {
       console.log("snap and generate bubble", isLastRow);
-      if(!isLastRow) {
+      if (!isLastRow) {
         this.time.delayedCall(200, () => launcher.generateBubble());
       }
     });
 
-    puzzle.on("poppedBubbles", (isPoped: boolean, bubbles: Bubble[]) => {
+    puzzle.on("poppedBubbles", (isPoped: boolean, bubbles: Bubble[], isClear: boolean) => {
+      console.log("is clear:", isClear);
       console.log(bubbles);
-      if(isPoped) {
-        console.log(puzzle.dropAllFloatingBubbles());
+      scoreboard.addScore(bubbles.length * 10);
+      if (isPoped) {
+        const floatingBubbles = puzzle.dropAllFloatingBubbles();
+
+        floatingBubbles.forEach((bubbles, i) => {
+          this.time.delayedCall((i + 1) * 500, () => {
+            scoreboard.addScore(bubbles.length * 20)
+          })
+        });
+
+        console.log(floatingBubbles);
+
       }
     })
   }

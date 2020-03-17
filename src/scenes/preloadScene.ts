@@ -27,7 +27,6 @@ class PreloadScene extends Phaser.Scene {
         start: 0,
         end: 5,
       }),
-      frameRate: 24,
       repeat: -1,
     });
 

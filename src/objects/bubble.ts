@@ -44,15 +44,11 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
       delay: 100,
       callbackScope: this,
       callback: () => {
-        if(this.y + this._displayHeight > this._gameHeight) {
-          this.pop();
+        if(this.y > this._gameHeight * 0.8) {
+          scene.time.delayedCall(Phaser.Math.Between(20, 80), () => this.pop());
         }
       }
     })
-  }
-
-  preUpdate() {
-    
   }
 
   setContext(context?: Bubble) {

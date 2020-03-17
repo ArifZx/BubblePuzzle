@@ -119,6 +119,7 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
         -direction.x * this.launchSpeed,
         -direction.y * this.launchSpeed
       );
+
       const bubble = this.currentBubble;
 
       this._scene.time.delayedCall(60, () =>
@@ -137,6 +138,10 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
   }
 
   startTracing(pointer: Phaser.Input.Pointer) {
+    if(!this.currentBubble) {
+      return;
+    }
+    
     this.showArrow();
     this.isTracing = true;
     this.touchPosition = pointer.position;

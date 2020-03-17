@@ -5,7 +5,7 @@ type RowCol = {
   column: number;
 };
 
-class PuzzleManager extends Phaser.GameObjects.GameObject {
+class PuzzleManager extends Phaser.GameObjects.Container {
   bubbles: Array<Array<Bubble>>;
   launchBubble: Bubble;
   launchBubbleRowCol: RowCol;
@@ -41,8 +41,8 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
   private _scene: Phaser.Scene;
   private _time: Phaser.Time.Clock;
 
-  constructor(scene: Phaser.Scene) {
-    super(scene, "puzzle");
+  constructor(scene: Phaser.Scene, x: number, y: number) {
+    super(scene, x, y);
 
     this.tileWidth = (scene.game.config.width as number) / this.columns;
     this.tileHeight = this.tileWidth;
@@ -65,7 +65,7 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
 
   preUpdate() {
     if (this.launchBubble) {
-      if (this.launchBubble.y <= this.tileHeight * 0.5 + 1) {
+      if (!this.isFloatingBubble(this.launchBubble)) {
         this.snapBubble(this.launchBubble);
         this.launchBubble = null;
       }
@@ -80,9 +80,9 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
   }
 
   snapBubble(bubble: Bubble, minSnap = 3, sameColor = true) {
-    
+
     // once snaping
-    if (!this.isSnapping ) {
+    if (!this.isSnapping) {
       const min = Math.max(minSnap, 1);
       const direction = bubble.body.velocity.normalize();
       this.isSnapping = true;
@@ -108,13 +108,24 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
           });
         }
 
-        this._time.delayedCall(neighbors.length * 100, () =>
+        this._time.delayedCall(neighbors.length * 100, () => {
+
+          const isClear = this.bubbles[0].reduce((acc, cur) => {
+            if (acc && cur) {
+              acc = false;
+            }
+
+            return acc;
+          }, true);
+
+
           this.emit(
             "poppedBubbles",
             isPoped,
-            neighbors.length >= min ? neighbors : []
-          )
-        );
+            neighbors.length >= min ? neighbors : [],
+            isClear
+          );
+        });
       });
 
       this._time.delayedCall(
@@ -123,6 +134,7 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
           this.launchBubbleRowCol = null;
           this.isSnapping = false;
           const isLastRow = rowCol.row >= this.rows - 1;
+
           this.emit("snapBubble", bubble, isLastRow);
         },
         null,
@@ -264,7 +276,7 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
   // Floating Bubble
 
   private isFloatingBubble(bubble: Bubble): boolean {
-    return bubble && bubble.y > this.tileHeight * 0.5;
+    return bubble && bubble.y > this.tileHeight * 0.5 + this.y;
   }
 
   getAllFloatingBubble(): Array<Array<Bubble>> {
@@ -346,13 +358,13 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
    */
   getCoordinate(row: number, column: number): Phaser.Math.Vector2 {
     let temp = new Phaser.Math.Vector2();
-    temp.x = (column + 1) * this.tileWidth - this.tileWidth * 0.5;
+    temp.x = (column + 1) * this.tileWidth - this.tileWidth * 0.5 + this.x;
 
     if (row % 2) {
       temp.x += this.tileWidth * 0.5;
     }
 
-    temp.y = (row + 1) * this.tileHeight - this.tileHeight * 0.5;
+    temp.y = (row + 1) * this.tileHeight - this.tileHeight * 0.5 + this.y;
     return temp;
   }
 
@@ -376,14 +388,14 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
     let temp = { row: 0, column: 0 };
 
     temp.row = Math.min(
-      Math.round((y + this.tileHeight * 0.5) / this.tileHeight - 1),
+      Math.round((y + this.tileHeight * 0.5 - this.y) / this.tileHeight - 1),
       this.rows
     );
 
     const tempX = temp.row % 2 ? x - this.tileWidth * 0.5 : x;
 
     temp.column = Math.min(
-      Math.round((tempX + this.tileWidth * 0.5) / this.tileWidth - 1),
+      Math.round((tempX + this.tileWidth * 0.5 - this.x) / this.tileWidth - 1),
       this.columns
     );
 

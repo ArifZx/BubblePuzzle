@@ -15,6 +15,9 @@ class PreloadScene extends Phaser.Scene {
     });
 
     this.load.image(options.arrow.texture.name, options.arrow.texture.location);
+
+    this.load.audio(options.bubble.sfx.blop.name, options.bubble.sfx.blop.location);
+    this.load.audio(options.launcher.sfx.splat.name, options.launcher.sfx.splat.location);
   }
 
   create(): void {

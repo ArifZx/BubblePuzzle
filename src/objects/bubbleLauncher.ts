@@ -14,6 +14,8 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
   puzzle: Puzzle;
   currentBubble: Bubble;
 
+  splatSFX: Phaser.Sound.BaseSound;
+
   private _scene: Phaser.Scene;
 
   constructor(scene: Phaser.Scene, x: number, y: number, puzzle: Puzzle) {
@@ -31,6 +33,8 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
     this.setOrigin(0.5, 0);
 
     scene.add.existing(this);
+
+    this.splatSFX = scene.sound.add(options.launcher.sfx.splat.name);
 
     this.arrow = scene.add.sprite(x, y, options.arrow.texture.name);
     this.arrow.setDepth(2);
@@ -105,6 +109,7 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
     this.isTracing = false;
 
     if (this.currentBubble) {
+      this.splatSFX.play();
       const direction = new Phaser.Math.Vector2(
         endPosition.x - this.x,
         endPosition.y - this.y

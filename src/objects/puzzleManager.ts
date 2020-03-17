@@ -44,6 +44,9 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
   constructor(scene: Phaser.Scene) {
     super(scene, "puzzle");
 
+    this.tileWidth = (scene.game.config.width as number) / this.columns;
+    this.tileHeight = this.tileWidth;
+
     this.bubbles = [];
     this.isSnapping = false;
     scene.sys.updateList.add(this);
@@ -63,7 +66,6 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
   preUpdate() {
     if (this.launchBubble) {
       if (this.launchBubble.y <= this.tileHeight * 0.5 + 1) {
-        this.launchBubble.setVelocity(0);
         this.snapBubble(this.launchBubble);
         this.launchBubble = null;
       }
@@ -78,12 +80,16 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
   }
 
   snapBubble(bubble: Bubble, minSnap = 3, sameColor = true) {
+    
+    // once snaping
     if (!this.isSnapping ) {
       const min = Math.max(minSnap, 1);
-      // once snaping
+      const direction = bubble.body.velocity.normalize();
       this.isSnapping = true;
       bubble.setVelocity(0);
       bubble.setAcceleration(0);
+      bubble.x += direction.x;
+      bubble.y += direction.y;
       const rowCol = this.getBubbleRowCol(bubble);
       this.launchBubbleRowCol = rowCol;
       this.bubbles[rowCol.row][rowCol.column] = bubble;
@@ -116,7 +122,8 @@ class PuzzleManager extends Phaser.GameObjects.GameObject {
         () => {
           this.launchBubbleRowCol = null;
           this.isSnapping = false;
-          this.emit("snapBubble", bubble);
+          const isLastRow = rowCol.row >= this.rows - 1;
+          this.emit("snapBubble", bubble, isLastRow);
         },
         null,
         this

@@ -9,6 +9,12 @@ const options = {
     },
     animation: {
       pop: "pop"
+    },
+    sfx: {
+      blop: {
+        name: "blop_sfx",
+        location: "assets/audio/blop.mp3",
+      }
     }
   },
   arrow: {
@@ -17,6 +23,14 @@ const options = {
       location: 'assets/arrow.png',
       height: 300,
       width: 300,
+    }
+  },
+  launcher: {
+    sfx: {
+      splat: {
+        name: "splat_sfx",
+        location: "assets/audio/splat.mp3"
+      }
     }
   }
 }

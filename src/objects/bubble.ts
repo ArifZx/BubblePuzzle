@@ -10,6 +10,7 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
   isDroped = false;
   id: string;
   collider: Physics.Arcade.Collider;
+  blopSFX: Phaser.Sound.BaseSound;
 
   private _scene: Phaser.Scene;
   private _gameHeight: number;
@@ -20,6 +21,8 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
     this._scene = scene;
     scene.add.existing(this);
     scene.physics.add.existing(this);
+
+    this.blopSFX = scene.sound.add(options.bubble.sfx.blop.name)
 
     this.isSnaped = false;
     this.id = Phaser.Utils.String.UUID();
@@ -78,6 +81,7 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
         delay: 200,
         callbackScope: this,
         callback: () => {
+          this.blopSFX.play();
           this.destroy();
         }
       });

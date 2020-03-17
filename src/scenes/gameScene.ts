@@ -77,9 +77,11 @@ class GameScene extends Phaser.Scene {
       puzzle.setLaunchBubble(bubble, puzzle);
     });
 
-    puzzle.on("snapBubble", () => {
-      console.log("snap and generate bubble");
-      launcher.generateBubble();
+    puzzle.on("snapBubble", (bubble: Bubble, isLastRow: boolean) => {
+      console.log("snap and generate bubble", isLastRow);
+      if(!isLastRow) {
+        this.time.delayedCall(200, () => launcher.generateBubble());
+      }
     });
 
     puzzle.on("poppedBubbles", (isPoped: boolean, bubbles: Bubble[]) => {

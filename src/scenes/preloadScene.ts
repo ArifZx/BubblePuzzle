@@ -18,6 +18,9 @@ class PreloadScene extends Phaser.Scene {
 
     this.load.audio(options.bubble.sfx.blop.name, options.bubble.sfx.blop.location);
     this.load.audio(options.launcher.sfx.splat.name, options.launcher.sfx.splat.location);
+
+    this.load.image(options.panel.texture.name, options.panel.texture.location);
+    this.load.image(options.restartButton.texture.name, options.restartButton.texture.location);
   }
 
   create(): void {

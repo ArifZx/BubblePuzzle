@@ -32,6 +32,22 @@ const options = {
         location: "assets/audio/splat.mp3"
       }
     }
+  },
+  panel: {
+    texture: {
+      name: 'panel',
+      location: 'assets/panel.png',
+      width: 500,
+      height: 362
+    }
+  },
+  restartButton: {
+    texture: {
+      name: 'restart-button',
+      location: 'assets/replay.png',
+      width: 230,
+      height: 218
+    }
   }
 }
 

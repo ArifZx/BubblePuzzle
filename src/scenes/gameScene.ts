@@ -3,25 +3,40 @@ import Bubble from "../objects/bubble";
 import Puzzle from "../objects/puzzleManager";
 import BubbleLauncher from "../objects/bubbleLauncher";
 import Scoreboard from "../objects/scoreboard";
+import RestartPanel from "../objects/restartPanel";
 
 class GameScene extends Phaser.Scene {
+
+  bubble: Bubble;
+  fpsText: Phaser.GameObjects.Text;
+  isPaused: boolean;
+
   constructor() {
     super({
       key: "GameScene"
     });
-  }
 
-  bubble: Bubble;
-  fpsText: Phaser.GameObjects.Text;
+    this.isPaused = false;
+  }
 
   init(data): void { }
 
   create(): void {
+    const { height, width } = this.game.config;
+    const restartPanel = new RestartPanel(this, (width as number) * 0.5, (height as number) * 0.5);
+
+    restartPanel.on('restart', () => {
+      this.scene.restart();
+    });
+
+    restartPanel.hide();
+
+
     const scoreboard = new Scoreboard(this, 0, 0);
 
     let puzzle = new Puzzle(this, 0, 90);
     puzzle.generateBubbles();
-    this.fpsText = new Phaser.GameObjects.Text(this, 0, (this.game.config.height as number) - 50, "00", {
+    this.fpsText = new Phaser.GameObjects.Text(this, 0, (height as number) - 50, "00", {
       color: "#FFFFFF",
       fontSize: "48px"
     });
@@ -33,35 +48,9 @@ class GameScene extends Phaser.Scene {
     this.input.on(
       "pointerdown",
       pointer => {
-        // console.log();
         const rowCol = puzzle.getRowCol(pointer.x, pointer.y);
         const bubble = puzzle.getBubbleByRowCol(rowCol);
-        // console.log(
-        //   pointer.x,
-        //   pointer.y,
-        //   rowCol,
-        //   (bubble && "ADA") || "KOSONG"
-        // );
         if (bubble) {
-          // console.log(bubble.x, bubble.y);
-          // const traceBubbles = puzzle.traceBubble(bubble);
-
-          // traceBubbles.forEach((v, i) => {
-          //   this.time.addEvent({
-          //     delay: 200 * i,
-          //     callbackScope: this,
-          //     callback: () => {
-          //       console.log(v.y);
-          //       v.pop(() => {
-          //         puzzle.removeBubble(v);
-          //       });
-          //     }
-          //   });
-          // });
-
-          // this.time.delayedCall(200 * traceBubbles.length + 50, () => {
-          //   console.log(puzzle.dropAllFloatingBubbles());
-          // });
           puzzle.snapBubble(bubble, 1);
         }
       },
@@ -84,6 +73,8 @@ class GameScene extends Phaser.Scene {
       console.log("snap and generate bubble", isLastRow);
       if (!isLastRow) {
         this.time.delayedCall(200, () => launcher.generateBubble());
+      } else {
+        restartPanel.show();
       }
     });
 
@@ -101,13 +92,23 @@ class GameScene extends Phaser.Scene {
         });
 
         console.log(floatingBubbles);
-
       }
     })
+
+    const restartKey = this.input.keyboard.addKey('R');
+    restartKey.on('up', event => {
+      this.scene.restart();
+    }, this)
+
+    const pausedKey = this.input.keyboard.addKey('P');
+    pausedKey.on('up', event => {
+      this.scene.run((this.isPaused ? 'run' : 'pause'));
+      this.isPaused = !this.isPaused;
+    }, this)
   }
 
   update(): void {
-    this.fpsText.setText(this.game.loop.actualFps.toFixed(2).toString());
+    this.fpsText.setText(this.game.loop.actualFps.toFixed(1).toString());
   }
 }
 

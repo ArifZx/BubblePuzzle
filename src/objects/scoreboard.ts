@@ -19,8 +19,6 @@ class Scoreboard extends Phaser.GameObjects.Rectangle {
       fontSize: "64px"
     });
 
-    console.log(this.scoreText);
-
     this.scoreText.setDepth(2);
     this.scoreText.setOrigin(0.5);
 
@@ -31,7 +29,6 @@ class Scoreboard extends Phaser.GameObjects.Rectangle {
   }
 
   setScore(score: number) {
-    console.log('set score', score);
     this.score = score;
     this.scoreText.setText(`Score: ${this.score}`)
   }

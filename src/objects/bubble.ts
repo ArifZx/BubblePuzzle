@@ -97,7 +97,6 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
           this.setY(this.snapPosition.y);
         }
 
-        console.log("snap", this.x, this.y, this.snapPosition);
         if (this.x === this.snapPosition.x && this.y === this.snapPosition.y) {
           this.snapEvent.remove();
           this.snapPosition = undefined;

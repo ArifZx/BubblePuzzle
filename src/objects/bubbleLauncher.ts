@@ -96,9 +96,17 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
       if(this.currentBubble) {
         this.graphics.defaultFillColor = this.currentBubble.color;
       }
-      this.aimLine.getPoints(90).forEach(point => {
-        this.graphics.fillRect(point.x - 3, point.y - 3, 6, 6);
-      });
+    
+
+      const points = this.aimLine.getPoints(88);
+
+      for(let i = 0; i < points.length; i++) {
+        if(this.puzzle.getBubbleByCoordinate(points[i].x, points[i].y)) {
+          break;
+        }
+
+        this.graphics.fillRect(points[i].x - 3, points[i].y - 3, 6, 6);
+      }
     }
   }
 

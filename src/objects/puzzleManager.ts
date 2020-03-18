@@ -92,7 +92,6 @@ class PuzzleManager extends Phaser.GameObjects.Container {
 
       // get temp row col bubble
       const rowCol = this.getBubbleRowCol(bubble);
-      console.log('first', rowCol)
 
       // checking snap must have neigbours or row col is not have a bubble
       while (
@@ -101,10 +100,8 @@ class PuzzleManager extends Phaser.GameObjects.Container {
       ) {
         if (this.getBubble(rowCol.row, rowCol.column)) {
           rowCol.row += 1;
-          console.log('not empty')
         } else {
           rowCol.row -= 1;
-          console.log('no neighbour')
         }
 
         rowCol.column = Math.min(
@@ -112,10 +109,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
           rowCol.row % 2 ? this.columns - 2 : this.columns - 1
         );
         bubble.setSnapPosition(this.getCoordinate(rowCol.row, rowCol.column));
-        console.log('process', rowCol);
       }
-
-      console.log('result', rowCol);
 
       this.launchBubbleRowCol = rowCol;
       this.bubbles[rowCol.row][rowCol.column] = bubble;
@@ -178,6 +172,11 @@ class PuzzleManager extends Phaser.GameObjects.Container {
   }
 
   getBubbleByRowCol(rowCol: RowCol) {
+    return this.getBubble(rowCol.row, rowCol.column);
+  }
+
+  getBubbleByCoordinate(x: number, y: number) {
+    const rowCol = this.getRowCol(x, y);
     return this.getBubble(rowCol.row, rowCol.column);
   }
 

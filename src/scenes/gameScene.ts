@@ -53,9 +53,10 @@ class GameScene extends Phaser.Scene {
     //   pointer => {
     //     const rowCol = puzzle.getRowCol(pointer.x, pointer.y);
     //     const bubble = puzzle.getBubbleByRowCol(rowCol);
-    //     console.log(bubble);
     //     if (bubble) {
-    //       puzzle.snapBubble(bubble, 1, true, false);
+    //       // puzzle.snapBubble(bubble, 1, true, false);
+    //       console.log(puzzle.getBubbleRowCol(bubble));
+    //       console.log(bubble);
     //     }
     //   },
     //   this
@@ -84,17 +85,19 @@ class GameScene extends Phaser.Scene {
     });
 
     puzzle.on("poppedBubbles", (isPoped: boolean, bubbles: Bubble[], isClear: boolean) => {
-      console.log("is clear:", isClear);
+      // console.log("is clear:", isClear);
       // console.log(bubbles);
       scoreboard.addScore(bubbles.length * 10);
       if (isPoped) {
-        const floatingBubbles = puzzle.dropAllFloatingBubbles();
-        // console.log(floatingBubbles);
-        floatingBubbles.forEach((bubbles, i) => {
-          this.time.delayedCall((i + 1) * 500, () => {
-            scoreboard.addScore(bubbles.length * 20)
-          })
-        });
+        this.time.delayedCall(bubbles.length * 50, () => {
+          const floatingBubbles = puzzle.dropAllFloatingBubbles();
+          // console.log(floatingBubbles);
+          floatingBubbles.forEach((bubbles, i) => {
+            this.time.delayedCall((i + 1) * 500, () => {
+              scoreboard.addScore(bubbles.length * 20)
+            })
+          });
+        }, null, this);
       }
 
       if (isClear) {

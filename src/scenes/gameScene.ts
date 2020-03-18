@@ -65,7 +65,7 @@ class GameScene extends Phaser.Scene {
     );
 
     launcher.on("launchedBubble", (bubble: Bubble) => {
-      console.log("launch");
+      // console.log("launch");
       puzzle.setLaunchBubble(bubble, puzzle);
     });
 
@@ -80,7 +80,7 @@ class GameScene extends Phaser.Scene {
 
     puzzle.on("poppedBubbles", (isPoped: boolean, bubbles: Bubble[], isClear: boolean) => {
       console.log("is clear:", isClear);
-      console.log(bubbles);
+      // console.log(bubbles);
       scoreboard.addScore(bubbles.length * 10);
       if (isPoped) {
         const floatingBubbles = puzzle.dropAllFloatingBubbles();
@@ -91,7 +91,7 @@ class GameScene extends Phaser.Scene {
           })
         });
 
-        console.log(floatingBubbles);
+        // console.log(floatingBubbles);
       }
     })
 

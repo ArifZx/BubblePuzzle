@@ -1,8 +1,8 @@
 import options from "../options";
 
-class RestartPanel extends Phaser.GameObjects.Container {
+class ActionPanel extends Phaser.GameObjects.Container {
 
-  gameOverText: Phaser.GameObjects.Text;
+  panelText: Phaser.GameObjects.Text;
   button: Phaser.GameObjects.Sprite;
   panel: Phaser.GameObjects.Sprite;
   initalPosition: Phaser.Math.Vector2;
@@ -10,7 +10,7 @@ class RestartPanel extends Phaser.GameObjects.Container {
 
   private _scene: Phaser.Scene;
 
-  constructor(scene: Phaser.Scene, x: number, y: number) {
+  constructor(scene: Phaser.Scene, x: number, y: number, text: string, isShow = false) {
     super(scene, x, y);
     this.initalPosition = new Phaser.Math.Vector2(x, y);
     this._scene = scene;
@@ -20,12 +20,12 @@ class RestartPanel extends Phaser.GameObjects.Container {
     this.panel.setDepth(this.depth);
     this.panel.setScale(1.25);
 
-    this.gameOverText = scene.add.text(0, 0, 'Game Over', {
+    this.panelText = scene.add.text(0, 0, text, {
       fontSize: "96px"
     });
-    this.gameOverText.setOrigin(0.5);
-    this.gameOverText.setDepth(this.depth + 1);
-    this.gameOverText.y -= this.gameOverText.displayHeight;
+    this.panelText.setOrigin(0.5);
+    this.panelText.setDepth(this.depth + 1);
+    this.panelText.y -= this.panelText.displayHeight;
 
     this.button = scene.add.sprite(0, 0, options.restartButton.texture.name);
     this.button.setDepth(this.depth + 1);
@@ -34,12 +34,18 @@ class RestartPanel extends Phaser.GameObjects.Container {
 
     this.container = scene.add.container(x, y, [
       this.panel,
-      this.gameOverText,
+      this.panelText,
       this.button
     ]);
     this.container.setDepth(this.depth);
 
     this.setButtonInteractive();
+
+    if (isShow) {
+      this.show();
+    } else {
+      this.hide();
+    }
 
     scene.add.existing(this);
   }
@@ -72,4 +78,4 @@ class RestartPanel extends Phaser.GameObjects.Container {
 
 }
 
-export default RestartPanel;
+export default ActionPanel;

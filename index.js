@@ -5,5 +5,5 @@ const app = express();
 app.use(express.static("."));
 
 app.listen(PORT, () => {
-  console.log("web is running");
+  console.log("Web is running at port", PORT);
 });

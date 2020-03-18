@@ -3,7 +3,7 @@ import Bubble from "../objects/bubble";
 import Puzzle from "../objects/puzzleManager";
 import BubbleLauncher from "../objects/bubbleLauncher";
 import Scoreboard from "../objects/scoreboard";
-import RestartPanel from "../objects/restartPanel";
+import ActionPanel from "../objects/actionPanel";
 
 class GameScene extends Phaser.Scene {
 
@@ -23,14 +23,16 @@ class GameScene extends Phaser.Scene {
 
   create(): void {
     const { height, width } = this.game.config;
-    const restartPanel = new RestartPanel(this, (width as number) * 0.5, (height as number) * 0.5);
+    const restartPanel = new ActionPanel(this, (width as number) * 0.5, (height as number) * 0.5, "Game Over");
+    const winPanel = new ActionPanel(this, (width as number) * 0.5, (height as number) * 0.5, "You Win");
 
     restartPanel.on('restart', () => {
       this.scene.restart();
     });
 
-    restartPanel.hide();
-
+    winPanel.on('restart', () => {
+      this.scene.restart();
+    });
 
     const scoreboard = new Scoreboard(this, 0, 0);
 
@@ -45,13 +47,15 @@ class GameScene extends Phaser.Scene {
 
     this.add.existing(this.fpsText);
 
+    // FOR DEBUG
     // this.input.on(
     //   "pointerdown",
     //   pointer => {
     //     const rowCol = puzzle.getRowCol(pointer.x, pointer.y);
     //     const bubble = puzzle.getBubbleByRowCol(rowCol);
+    //     console.log(bubble);
     //     if (bubble) {
-    //       puzzle.snapBubble(bubble, 1);
+    //       puzzle.snapBubble(bubble, 1, true, false);
     //     }
     //   },
     //   this
@@ -70,10 +74,11 @@ class GameScene extends Phaser.Scene {
     });
 
     puzzle.on("snapBubble", (bubble: Bubble, isLastRow: boolean) => {
-      console.log("snap and generate bubble", isLastRow);
+      // console.log("snap and generate bubble", isLastRow);
       if (!isLastRow) {
         this.time.delayedCall(200, () => launcher.generateBubble());
       } else {
+        launcher.setLaunchInteractive(false);
         restartPanel.show();
       }
     });
@@ -84,14 +89,17 @@ class GameScene extends Phaser.Scene {
       scoreboard.addScore(bubbles.length * 10);
       if (isPoped) {
         const floatingBubbles = puzzle.dropAllFloatingBubbles();
-
+        // console.log(floatingBubbles);
         floatingBubbles.forEach((bubbles, i) => {
           this.time.delayedCall((i + 1) * 500, () => {
             scoreboard.addScore(bubbles.length * 20)
           })
         });
+      }
 
-        // console.log(floatingBubbles);
+      if (isClear) {
+        launcher.setLaunchInteractive(false);
+        winPanel.show();
       }
     })
 

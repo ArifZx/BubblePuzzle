@@ -79,10 +79,9 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     ctx.setOverlap(bubble, current => ctx.snapBubble(current), ctx);
   }
 
-  snapBubble(bubble: Bubble, minSnap = 3, sameColor = true) {
+  snapBubble(bubble: Bubble, minSnap = 3, sameColor = true, autoPosition = true) {
     // once snaping
     if (!this.isSnapping) {
-      console.log('snap');
       const min = Math.max(minSnap, 1);
       const direction = bubble.body.velocity.normalize();
       this.isSnapping = true;
@@ -96,8 +95,10 @@ class PuzzleManager extends Phaser.GameObjects.Container {
 
       // checking snap must have neigbours or row col is not have a bubble
       while (
-        this.getBubble(rowCol.row, rowCol.column) ||
-        (rowCol.row && !this.getNeighbors(bubble).length)
+        autoPosition && (
+          this.getBubble(rowCol.row, rowCol.column) ||
+          (rowCol.row && !this.getNeighbors(bubble).length)
+        )
       ) {
         if (this.getBubble(rowCol.row, rowCol.column)) {
           rowCol.row += 1;
@@ -363,10 +364,6 @@ class PuzzleManager extends Phaser.GameObjects.Container {
           );
       });
     });
-  }
-
-  bubbleOverlapHandler(bubble: Bubble) {
-    // console.log(this.getRowCol(bubble.x, bubble.y));
   }
 
   /**

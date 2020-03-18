@@ -68,6 +68,19 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
 
     this.generateBubble();
 
+    this.setLaunchInteractive();
+  }
+
+  /**
+   * Set launcher interactive
+   * @param active default true
+   */
+  setLaunchInteractive(active = true) {
+    if (!active) {
+      this.removeInteractive();
+      return;
+    }
+
     this.setInteractive()
       .on(
         "pointerdown",
@@ -104,6 +117,7 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
         },
         this
       );
+
   }
 
   redraw() {

@@ -7,7 +7,9 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
   isTracing: boolean;
   isReady: boolean;
   arrow: Phaser.GameObjects.Sprite;
-  line: Phaser.Geom.Line;
+  aimLength: number;
+  aimLine: Phaser.Geom.Line;
+  pointerLine: Phaser.Geom.Line;
   graphics: Phaser.GameObjects.Graphics;
   launchSpeed: number;
 
@@ -28,7 +30,7 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
     this.isReady = true;
     this.touchPosition = null;
     this.puzzle = puzzle;
-    this.launchSpeed = 1500;
+    this.launchSpeed = 3000;
 
     this.setOrigin(0.5, 0);
 
@@ -41,38 +43,61 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
     this.arrow.setAlpha(0);
 
     this.graphics = this._scene.add.graphics();
-    this.line = new Phaser.Geom.Line();
+    this.pointerLine = new Phaser.Geom.Line();
+    this.aimLine = new Phaser.Geom.Line();
+    this.aimLength = this.y;
 
     this.generateBubble();
 
-
     this.setInteractive()
-      .on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-        this.startTracing(pointer);
-        this.redraw();
-      }, this)
-      .on("pointerup", (pointer: Phaser.Input.Pointer) => {
-        if (this.isTracing) {
-          this.launch(new Phaser.Math.Vector2(pointer.position));
-        }
-        this.stopTracing();
-      }, this)
-      .on("pointerout", () => {
-        this.stopTracing();
-      }, this)
-      .on("pointermove", (pointer: Phaser.Input.Pointer) => {
-        if (this.isTracing) {
-          this.trace(pointer);
-        }
-        this.redraw();
-      }, this);
+      .on(
+        "pointerdown",
+        (pointer: Phaser.Input.Pointer) => {
+          this.startTracing(pointer);
+          this.redraw();
+        },
+        this
+      )
+      .on(
+        "pointerup",
+        (pointer: Phaser.Input.Pointer) => {
+          if (this.isTracing) {
+            this.launch(new Phaser.Math.Vector2(pointer.position));
+          }
+          this.stopTracing();
+        },
+        this
+      )
+      .on(
+        "pointerout",
+        () => {
+          this.stopTracing();
+        },
+        this
+      )
+      .on(
+        "pointermove",
+        (pointer: Phaser.Input.Pointer) => {
+          if (this.isTracing) {
+            this.trace(pointer);
+          }
+          this.redraw();
+        },
+        this
+      );
   }
 
   redraw() {
     this.graphics.clear();
 
     this.graphics.lineStyle(5, 0xffffff, this.isTracing ? 1 : 0);
-    this.graphics.strokeLineShape(this.line);
+    this.graphics.strokeLineShape(this.pointerLine);
+    this.graphics.lineStyle(
+      6,
+      (this.currentBubble && this.currentBubble.color) || 0xff0000,
+      this.isTracing ? 1 : 0
+    );
+    this.graphics.strokeLineShape(this.aimLine);
   }
 
   generateBubble() {
@@ -138,10 +163,10 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
   }
 
   startTracing(pointer: Phaser.Input.Pointer) {
-    if(!this.currentBubble) {
+    if (!this.currentBubble) {
       return;
     }
-    
+
     this.showArrow();
     this.isTracing = true;
     this.touchPosition = pointer.position;
@@ -160,8 +185,18 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
     const degree =
       Phaser.Math.Angle.Between(this.x, this.y, pointer.x, pointer.y) *
       Phaser.Math.RAD_TO_DEG;
+    const direction = new Phaser.Math.Vector2(
+      this.x - pointer.x,
+      this.y - pointer.y
+    ).normalize();
     this.arrow.setAngle(degree - 90);
-    this.line.setTo(this.x, this.y, pointer.x, pointer.y);
+    this.pointerLine.setTo(this.x, this.y, pointer.x, pointer.y);
+    this.aimLine.setTo(
+      this.x,
+      this.y,
+      this.x + direction.x * this.aimLength,
+      this.y + direction.y * this.aimLength
+    );
   }
 }
 

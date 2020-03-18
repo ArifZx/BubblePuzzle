@@ -80,7 +80,6 @@ class PuzzleManager extends Phaser.GameObjects.Container {
   }
 
   snapBubble(bubble: Bubble, minSnap = 3, sameColor = true) {
-
     // once snaping
     if (!this.isSnapping) {
       const min = Math.max(minSnap, 1);
@@ -90,42 +89,46 @@ class PuzzleManager extends Phaser.GameObjects.Container {
       bubble.setAcceleration(0);
       bubble.x += direction.x;
       bubble.y += direction.y;
+
+      // get temp row col bubble
       const rowCol = this.getBubbleRowCol(bubble);
+
+      // check row col is not have a bubble
+      if(this.getBubble(rowCol.row, rowCol.column)) {
+        rowCol.row += 1;
+      }
+
       this.launchBubbleRowCol = rowCol;
       this.bubbles[rowCol.row][rowCol.column] = bubble;
       const coord = this.getCoordinate(rowCol.row, rowCol.column);
 
-      this.scene.time.delayedCall(10, () => {
-        bubble.setX(coord.x);
-        bubble.setY(coord.y);
+      bubble.setX(coord.x);
+      bubble.setY(coord.y);
 
-        const neighbors = this.traceBubble(bubble, sameColor);
-        const isPoped = neighbors.length >= min;
-        if (isPoped) {
-          neighbors.forEach((v, i) => {
-            this._time.delayedCall(100 * i, () => v.pop());
-            this.removeBubble(v);
-          });
-        }
-
-        this._time.delayedCall(neighbors.length * 100, () => {
-
-          const isClear = this.bubbles[0].reduce((acc, cur) => {
-            if (acc && cur) {
-              acc = false;
-            }
-
-            return acc;
-          }, true);
-
-
-          this.emit(
-            "poppedBubbles",
-            isPoped,
-            neighbors.length >= min ? neighbors : [],
-            isClear
-          );
+      const neighbors = this.traceBubble(bubble, sameColor);
+      const isPoped = neighbors.length >= min;
+      if (isPoped) {
+        neighbors.forEach((v, i) => {
+          this._time.delayedCall(100 * i, () => v.pop());
+          this.removeBubble(v);
         });
+      }
+
+      this._time.delayedCall(neighbors.length * 100, () => {
+        const isClear = this.bubbles[0].reduce((acc, cur) => {
+          if (acc && cur) {
+            acc = false;
+          }
+
+          return acc;
+        }, true);
+
+        this.emit(
+          "poppedBubbles",
+          isPoped,
+          neighbors.length >= min ? neighbors : [],
+          isClear
+        );
       });
 
       this._time.delayedCall(
@@ -345,7 +348,6 @@ class PuzzleManager extends Phaser.GameObjects.Container {
       });
     });
   }
-
 
   bubbleOverlapHandler(bubble: Bubble) {
     // console.log(this.getRowCol(bubble.x, bubble.y));

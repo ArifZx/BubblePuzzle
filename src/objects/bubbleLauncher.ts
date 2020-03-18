@@ -7,10 +7,18 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
   isTracing: boolean;
   isReady: boolean;
   arrow: Phaser.GameObjects.Sprite;
+
+  guidePointLength: number;
   aimLength: number;
+  borderLineLeft: Phaser.Geom.Line;
+  borderLineRight: Phaser.Geom.Line;
+  leftBorder: number;
+  rightBorder: number;
+  reflectedLine: Phaser.Geom.Line;
   aimLine: Phaser.Geom.Line;
   pointerLine: Phaser.Geom.Line;
   graphics: Phaser.GameObjects.Graphics;
+
   launchSpeed: number;
 
   puzzle: Puzzle;
@@ -42,10 +50,21 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
     this.arrow.setDepth(2);
     this.arrow.setAlpha(0);
 
+    this.guidePointLength = 100;
     this.graphics = this._scene.add.graphics();
     this.pointerLine = new Phaser.Geom.Line();
     this.aimLine = new Phaser.Geom.Line();
     this.aimLength = this.y;
+    this.reflectedLine = new Phaser.Geom.Line();
+    this.borderLineLeft = new Phaser.Geom.Line(0, 0, 0, height as number);
+    this.borderLineRight = new Phaser.Geom.Line(
+      width as number,
+      0,
+      width as number,
+      height as number
+    );
+    this.leftBorder = 0;
+    this.rightBorder = width as number;
 
     this.generateBubble();
 
@@ -91,21 +110,75 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
     this.graphics.clear();
 
     if (this.isTracing) {
+      // pointer line
       this.graphics.lineStyle(5, 0xffffff);
       this.graphics.strokeLineShape(this.pointerLine);
-      if(this.currentBubble) {
+
+      // guide lines
+      let border: "left" | "right";
+      let reflectedPoint: Phaser.Geom.Point;
+      if (this.currentBubble) {
         this.graphics.defaultFillColor = this.currentBubble.color;
       }
-    
-
-      const points = this.aimLine.getPoints(88);
-
-      for(let i = 0; i < points.length; i++) {
-        if(this.puzzle.getBubbleByCoordinate(points[i].x, points[i].y)) {
+      const aimPoints = this.aimLine.getPoints(this.guidePointLength);
+      for (let i = 0; i < aimPoints.length; i++) {
+        // check each point has bubble in puzzle
+        if (
+          this.puzzle &&
+          this.puzzle.getBubbleByCoordinate(aimPoints[i].x, aimPoints[i].y)
+        ) {
           break;
         }
 
-        this.graphics.fillRect(points[i].x - 3, points[i].y - 3, 6, 6);
+        this.graphics.fillRect(aimPoints[i].x - 3, aimPoints[i].y - 3, 6, 6);
+
+        if (aimPoints[i].x <= this.leftBorder) {
+          border = "left";
+        } else if (aimPoints[i].x >= this.rightBorder) {
+          border = "right";
+        }
+
+        if (border) {
+          reflectedPoint = aimPoints[i];
+          break;
+        }
+      }
+
+      if (border && reflectedPoint) {
+        const reflecctedAngle = Phaser.Geom.Line.ReflectAngle(
+          this.aimLine,
+          border === "left" ? this.borderLineLeft : this.borderLineRight
+        );
+        Phaser.Geom.Line.SetToAngle(
+          this.reflectedLine,
+          reflectedPoint.x,
+          reflectedPoint.y,
+          reflecctedAngle,
+          this.aimLength
+        );
+
+        const reflectedPoints = this.reflectedLine.getPoints(
+          this.guidePointLength
+        );
+        for (let i = 0; i < reflectedPoints.length; i++) {
+          // check each point has bubble in puzzle
+          if (
+            this.puzzle &&
+            this.puzzle.getBubbleByCoordinate(
+              reflectedPoints[i].x,
+              reflectedPoints[i].y
+            )
+          ) {
+            break;
+          }
+
+          this.graphics.fillRect(
+            reflectedPoints[i].x - 3,
+            reflectedPoints[i].y - 3,
+            6,
+            6
+          );
+        }
       }
     }
   }

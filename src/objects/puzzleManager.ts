@@ -82,6 +82,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
   snapBubble(bubble: Bubble, minSnap = 3, sameColor = true) {
     // once snaping
     if (!this.isSnapping) {
+      console.log('snap');
       const min = Math.max(minSnap, 1);
       const direction = bubble.body.velocity.normalize();
       this.isSnapping = true;
@@ -96,7 +97,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
       // checking snap must have neigbours or row col is not have a bubble
       while (
         this.getBubble(rowCol.row, rowCol.column) ||
-        !this.getNeighbors(bubble).length
+        (rowCol.row && !this.getNeighbors(bubble).length)
       ) {
         if (this.getBubble(rowCol.row, rowCol.column)) {
           rowCol.row += 1;

@@ -11,6 +11,8 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
   id: string;
   collider: Physics.Arcade.Collider;
   blopSFX: Phaser.Sound.BaseSound;
+  snapPosition: Phaser.Math.Vector2;
+  snapEvent: Phaser.Time.TimerEvent;
 
   private _scene: Phaser.Scene;
   private _gameHeight: number;
@@ -22,7 +24,7 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
-    this.blopSFX = scene.sound.add(options.bubble.sfx.blop.name)
+    this.blopSFX = scene.sound.add(options.bubble.sfx.blop.name);
 
     this.isSnaped = false;
     this.id = Phaser.Utils.String.UUID();
@@ -44,11 +46,11 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
       delay: 100,
       callbackScope: this,
       callback: () => {
-        if(this.y > this._gameHeight * 0.8) {
+        if (this.y > this._gameHeight * 0.8) {
           scene.time.delayedCall(Phaser.Math.Between(20, 80), () => this.pop());
         }
       }
-    })
+    });
   }
 
   setContext(context?: Bubble) {
@@ -68,6 +70,40 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
         Math.floor(Math.random() * options.bubble.color.length)
       ]
     );
+  }
+
+  setSnapPosition(x: number | Phaser.Math.Vector2, y?: number) {
+    if (this.snapEvent) {
+      this.snapEvent.remove();
+      this.snapEvent = undefined;
+    }
+
+    if (typeof x === "number") {
+      this.snapPosition = new Phaser.Math.Vector2(x, y);
+    } else {
+      this.snapPosition = new Phaser.Math.Vector2(x);
+    }
+
+    this.setX(this.snapPosition.x);
+    this.setY(this.snapPosition.y);
+
+    this.snapEvent = this._scene.time.addEvent({
+      delay: 100,
+      repeat: 10,
+      callbackScope: this,
+      callback: () => {
+        if (!this.isDroped && this.snapPosition) {
+          this.setX(this.snapPosition.x);
+          this.setY(this.snapPosition.y);
+        }
+
+        console.log("snap", this.x, this.y, this.snapPosition);
+        if (this.x === this.snapPosition.x && this.y === this.snapPosition.y) {
+          this.snapEvent.remove();
+          this.snapPosition = undefined;
+        }
+      }
+    });
   }
 
   pop(callback?: () => void) {
@@ -95,7 +131,7 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
       this.setContext(context);
       this.setCollideWorldBounds(false);
       this.context.setGravityY(500);
-      if(withPop) {
+      if (withPop) {
         this.context.scene.time.addEvent({
           delay: Phaser.Math.Between(200, 500),
           callback: () => {

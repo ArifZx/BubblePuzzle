@@ -90,14 +90,16 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
   redraw() {
     this.graphics.clear();
 
-    this.graphics.lineStyle(5, 0xffffff, this.isTracing ? 1 : 0);
-    this.graphics.strokeLineShape(this.pointerLine);
-    this.graphics.lineStyle(
-      6,
-      (this.currentBubble && this.currentBubble.color) || 0xff0000,
-      this.isTracing ? 1 : 0
-    );
-    this.graphics.strokeLineShape(this.aimLine);
+    if (this.isTracing) {
+      this.graphics.lineStyle(5, 0xffffff);
+      this.graphics.strokeLineShape(this.pointerLine);
+      if(this.currentBubble) {
+        this.graphics.defaultFillColor = this.currentBubble.color;
+      }
+      this.aimLine.getPoints(90).forEach(point => {
+        this.graphics.fillRect(point.x - 3, point.y - 3, 6, 6);
+      });
+    }
   }
 
   generateBubble() {

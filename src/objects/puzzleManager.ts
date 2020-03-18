@@ -92,18 +92,34 @@ class PuzzleManager extends Phaser.GameObjects.Container {
 
       // get temp row col bubble
       const rowCol = this.getBubbleRowCol(bubble);
+      console.log('first', rowCol)
 
-      // check row col is not have a bubble
-      if(this.getBubble(rowCol.row, rowCol.column)) {
-        rowCol.row += 1;
+      // checking snap must have neigbours or row col is not have a bubble
+      while (
+        this.getBubble(rowCol.row, rowCol.column) ||
+        !this.getNeighbors(bubble).length
+      ) {
+        if (this.getBubble(rowCol.row, rowCol.column)) {
+          rowCol.row += 1;
+          console.log('not empty')
+        } else {
+          rowCol.row -= 1;
+          console.log('no neighbour')
+        }
+
+        rowCol.column = Math.min(
+          rowCol.column,
+          rowCol.row % 2 ? this.columns - 2 : this.columns - 1
+        );
+        bubble.setSnapPosition(this.getCoordinate(rowCol.row, rowCol.column));
+        console.log('process', rowCol);
       }
+
+      console.log('result', rowCol);
 
       this.launchBubbleRowCol = rowCol;
       this.bubbles[rowCol.row][rowCol.column] = bubble;
-      const coord = this.getCoordinate(rowCol.row, rowCol.column);
-
-      bubble.setX(coord.x);
-      bubble.setY(coord.y);
+      bubble.setSnapPosition(this.getCoordinate(rowCol.row, rowCol.column));
 
       const neighbors = this.traceBubble(bubble, sameColor);
       const isPoped = neighbors.length >= min;
@@ -402,7 +418,10 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     );
 
     temp.row = Math.max(0, temp.row);
-    temp.column = Math.max(0, temp.column);
+    temp.column = Math.min(
+      Math.max(0, temp.column),
+      temp.row % 2 ? this.columns - 2 : this.columns - 1
+    );
 
     return temp;
   }

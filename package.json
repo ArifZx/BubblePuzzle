@@ -6,8 +6,7 @@
   "scripts": {
     "build": "webpack",
     "watch": "./node_modules/.bin/webpack --watch",
-    "serve": "./node_modules/.bin/live-server --port=8085 --host=0.0.0.0",
-    "start": "./node_modules/.bin/live-server"
+    "serve": "./node_modules/.bin/live-server --port=8085 --host=0.0.0.0"
   },
   "repository": {
     "type": "git",
@@ -27,5 +26,8 @@
     "typescript": "^3.8.3",
     "webpack": "^4.42.0",
     "webpack-cli": "^3.3.11"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
   }
 }

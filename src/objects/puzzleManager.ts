@@ -218,16 +218,15 @@ class PuzzleManager extends Phaser.GameObjects.Container {
       let maxColumns = column ? Math.max(0, Math.min(column, this.columns)) : this.columns;
       maxColumns = _row % 2 ? maxColumns - 1 : maxColumns;
       for (let _column = 0; _column < maxColumns; _column++) {
-        // if (_row < this.initRows) {
-        //   const coord = this.getCoordinate(_row, _column);
-        //   const bubble = new Bubble(this.scene, coord.x, coord.y);
-        //   bubble.setRandomColor();
-        //   this.bubbles[_row][_column] = bubble;
-        // } else {
-        //   this.bubbles[_row][_column] = undefined;
-        // }
-
-        this.bubbles[_row][_column] = undefined;
+        if (_row < this.initRows) {
+          const coord = this.getCoordinate(_row, _column);
+          const bubble = new Bubble(this.scene, coord.x, coord.y);
+          bubble.setRandomColor();
+          this.bubbles[_row][_column] = bubble;
+        } else {
+          this.bubbles[_row][_column] = undefined;
+        }
+        // this.bubbles[_row][_column] = undefined;
       }
     }
   }
@@ -307,28 +306,26 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     let tempRowCol: RowCol;
     let minDistance = Number.MAX_VALUE;
     const { row, column } = this.getBubbleRowCol(neighbor);
-    const touch = neighbor.body.touching;
 
     const offsets = [];
-
-    Object.keys(touch).forEach(key => {
-      if (touch[key]) {
-        switch (key) {
-          case "up":
-            offsets.push(...this.neighborsOffsets[row % 2].filter(v => v[1] < 0));
-            break;
-          case "down":
-            offsets.push(...this.neighborsOffsets[row % 2].filter(v => v[1] > 0));
-            break;
-          case "left":
-            offsets.push(...this.neighborsOffsets[row % 2].filter(v => v[0] < 0));
-            break;
-          case "right":
-            offsets.push(...this.neighborsOffsets[row % 2].filter(v => v[0] > 0));
-            break;
-        }
+    const touch = neighbor.body.touching;
+    this.neighborsOffsets[row % 2].forEach(offset => {
+      if (touch.up && offset[1] < 0) {
+        offsets.push(offset);
       }
-    })
+
+      if (touch.down && offset[1] > 0) {
+        offsets.push(offset);
+      }
+
+      if (touch.left && offset[0] < 0) {
+        offsets.push(offset);
+      }
+
+      if (touch.right && offset[0] > 0) {
+        offsets.push(offset);
+      }
+    });
 
     offsets.forEach(offset => {
       const nRowCol: RowCol = {

@@ -64,14 +64,14 @@ class ActionPanel extends Phaser.GameObjects.Container {
       this.button.removeInteractive();
     } else {
       this.button.setInteractive()
-        .on('pointerover', () => {
+        .on("pointerover", () => {
           this.button.setScale(1);
         })
-        .on('pointerout', () => {
+        .on("pointerout", () => {
           this.button.setScale(0.8);
         })
-        .on('pointerdown', () => {
-          this.emit('restart');
+        .on("pointerdown", () => {
+          this.emit("action");
         });
     }
   }

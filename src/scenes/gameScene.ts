@@ -26,11 +26,11 @@ class GameScene extends Phaser.Scene {
     const restartPanel = new ActionPanel(this, (width as number) * 0.5, (height as number) * 0.5, "Game Over");
     const winPanel = new ActionPanel(this, (width as number) * 0.5, (height as number) * 0.5, "You Win");
 
-    restartPanel.on('restart', () => {
+    restartPanel.on("action", () => {
       this.scene.restart();
     });
 
-    winPanel.on('restart', () => {
+    winPanel.on("action", () => {
       this.scene.restart();
     });
 
@@ -74,17 +74,12 @@ class GameScene extends Phaser.Scene {
       puzzle.setLaunchBubble(bubble, puzzle);
     });
 
-    puzzle.on("snapBubble", (bubble: Bubble, isLastRow: boolean) => {
+    puzzle.on("snapBubble", (bubble: Bubble) => {
       // console.log("snap and generate bubble", isLastRow);
-      if (!isLastRow) {
-        this.time.delayedCall(200, () => launcher.generateBubble());
-      } else {
-        launcher.setLaunchInteractive(false);
-        restartPanel.show();
-      }
+      this.time.delayedCall(200, () => launcher.generateBubble());
     });
 
-    puzzle.on("poppedBubbles", (isPoped: boolean, bubbles: Bubble[], isClear: boolean) => {
+    puzzle.on("poppedBubbles", (isPoped: boolean, bubbles: Bubble[], isLastRow: boolean, isClear: boolean) => {
       // console.log("is clear:", isClear);
       // console.log(bubbles);
       scoreboard.addScore(bubbles.length * 10);
@@ -98,6 +93,9 @@ class GameScene extends Phaser.Scene {
             })
           });
         }, null, this);
+      } else if (isLastRow) {
+        launcher.setLaunchInteractive(false);
+        restartPanel.show();
       }
 
       if (isClear) {
@@ -106,14 +104,14 @@ class GameScene extends Phaser.Scene {
       }
     })
 
-    const restartKey = this.input.keyboard.addKey('R');
-    restartKey.on('up', event => {
+    const restartKey = this.input.keyboard.addKey("R");
+    restartKey.on("up", event => {
       this.scene.restart();
     }, this)
 
-    const pausedKey = this.input.keyboard.addKey('P');
-    pausedKey.on('up', event => {
-      this.scene.run((this.isPaused ? 'run' : 'pause'));
+    const pausedKey = this.input.keyboard.addKey("P");
+    pausedKey.on("up", event => {
+      this.scene.run((this.isPaused ? "run" : "pause"));
       this.isPaused = !this.isPaused;
     }, this)
   }

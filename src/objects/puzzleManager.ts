@@ -128,10 +128,13 @@ class PuzzleManager extends Phaser.GameObjects.Container {
           return acc;
         }, true);
 
+        const isLastRow = rowCol.row >= this.rows - 1;
+
         this.emit(
           "poppedBubbles",
           isPoped,
           neighbors.length >= min ? neighbors : [],
+          isLastRow,
           isClear
         );
       });
@@ -141,9 +144,8 @@ class PuzzleManager extends Phaser.GameObjects.Container {
         () => {
           this.launchBubbleRowCol = null;
           this.isSnapping = false;
-          const isLastRow = rowCol.row >= this.rows - 1;
 
-          this.emit("snapBubble", bubble, isLastRow);
+          this.emit("snapBubble", bubble);
         },
         null,
         this
@@ -254,16 +256,16 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     Object.keys(touch).forEach(key => {
       if (touch[key]) {
         switch (key) {
-          case 'up':
+          case "up":
             offsets.push(...this.neighborsOffsets[row % 2].filter(v => v[1] < 0));
             break;
-          case 'down':
+          case "down":
             offsets.push(...this.neighborsOffsets[row % 2].filter(v => v[1] > 0));
             break;
-          case 'left':
+          case "left":
             offsets.push(...this.neighborsOffsets[row % 2].filter(v => v[0] < 0));
             break;
-          case 'right':
+          case "right":
             offsets.push(...this.neighborsOffsets[row % 2].filter(v => v[0] > 0));
             break;
         }
@@ -276,7 +278,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
         column: column + offset[0],
       }
 
-      if (!this.bubbles[nRowCol.row][nRowCol.column]) {
+      if (!this.bubbles[nRowCol.row][nRowCol.column] && nRowCol.column >= 0 && nRowCol.row >= 0) {
         const nPos = this.getCoordinate(nRowCol.row, nRowCol.column);
         const distance = (new Phaser.Math.Vector2(nPos.x - x, nPos.y - y)).length();
         if (distance <= minDistance) {
@@ -454,8 +456,9 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     );
 
     temp.row = Math.max(0, temp.row);
+    temp.column = Math.max(0, temp.column);
     temp.column = Math.min(
-      Math.max(0, temp.column),
+      temp.column,
       temp.row % 2 ? this.columns - 2 : this.columns - 1
     );
 

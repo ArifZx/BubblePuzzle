@@ -14,7 +14,7 @@ class Scoreboard extends Phaser.GameObjects.Rectangle {
     this.setDepth(1);
 
     this.score = 0;
-    this.scoreText = new Phaser.GameObjects.Text(scene, x + (width as number) * 0.5, y + 45, 'asdasds', {
+    this.scoreText = new Phaser.GameObjects.Text(scene, x + (width as number) * 0.5, y + 45, "", {
       color: "#FFF",
       fontSize: "64px"
     });

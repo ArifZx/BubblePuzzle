@@ -65,19 +65,34 @@ class PuzzleManager extends Phaser.GameObjects.Container {
 
   preUpdate() {
     if (this.launchBubble) {
-      if (!this.isFloatingBubble(this.launchBubble)) {
+      if (this.isBaseBubble(this.launchBubble)) {
         this.snapBubble(this.launchBubble);
         this.launchBubble = null;
       }
     }
   }
 
+  /**
+   * Set bubble when bubble is launch from launcher
+   * @param bubble 
+   * @param context 
+   */
   setLaunchBubble(bubble: Bubble, context?: PuzzleManager) {
     const ctx = context || this;
     ctx.setOverlap(bubble, (current, other) => ctx.snapBubble(current, other), ctx);
     ctx.launchBubble = bubble;
   }
 
+  /**
+   * Snap bubble with neighbor or self
+   * minSnap:
+   *  default: 3
+   *  min: 1
+   * @param bubble 
+   * @param neighbor 
+   * @param minSnap 
+   * @param sameColor 
+   */
   snapBubble(bubble: Bubble, neighbor?: Bubble, minSnap = 3, sameColor = true) {
     // once snaping
 
@@ -160,6 +175,11 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     }
   }
 
+  /**
+   * Get bubble by row and column
+   * @param row 
+   * @param column 
+   */
   getBubble(row: number, column: number) {
     if (row >= 0 && column >= 0 && row < this.rows && column < this.columns) {
       return this.bubbles[row][column];
@@ -168,32 +188,54 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     return null;
   }
 
+  /**
+   * Get bubble by RowCol
+   * @param rowCol 
+   */
   getBubbleByRowCol(rowCol: RowCol) {
     return this.getBubble(rowCol.row, rowCol.column);
   }
 
+  /**
+   * Get bubble by coordinate position
+   * @param x 
+   * @param y 
+   */
   getBubbleByCoordinate(x: number, y: number) {
     const rowCol = this.getRowCol(x, y);
     return this.getBubble(rowCol.row, rowCol.column);
   }
 
-  generateBubbles() {
-    for (let row = 0; row < this.rows; row++) {
-      this.bubbles[row] = [];
-      const maxColumns = row % 2 ? this.columns - 1 : this.columns;
-      for (let column = 0; column < maxColumns; column++) {
-        if (row < this.initRows) {
-          const coord = this.getCoordinate(row, column);
-          const bubble = new Bubble(this.scene, coord.x, coord.y);
-          bubble.setRandomColor();
-          this.bubbles[row][column] = bubble;
-        } else {
-          this.bubbles[row][column] = undefined;
-        }
+  /**
+   * Generate bubbles
+   * @param row 
+   * @param column 
+   */
+  generateBubbles(row?: number, column?: number) {
+    const maxRow = row ? Math.max(0, Math.min(row, this.rows)) : this.rows;
+    for (let _row = 0; _row < maxRow; _row++) {
+      this.bubbles[_row] = [];
+      let maxColumns = column ? Math.max(0, Math.min(column, this.columns)) : this.columns;
+      maxColumns = _row % 2 ? maxColumns - 1 : maxColumns;
+      for (let _column = 0; _column < maxColumns; _column++) {
+        // if (_row < this.initRows) {
+        //   const coord = this.getCoordinate(_row, _column);
+        //   const bubble = new Bubble(this.scene, coord.x, coord.y);
+        //   bubble.setRandomColor();
+        //   this.bubbles[_row][_column] = bubble;
+        // } else {
+        //   this.bubbles[_row][_column] = undefined;
+        // }
+
+        this.bubbles[_row][_column] = undefined;
       }
     }
   }
 
+  /**
+   * Remove bubble from puzzle
+   * @param bubble 
+   */
   removeBubble(bubble: Bubble) {
     if (bubble) {
       const rowCol = this.getBubbleRowCol(bubble);
@@ -201,11 +243,21 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     }
   }
 
+  /**
+   * Remove bubble by row col from puzzle
+   * @param row number
+   * @param column number
+   */
   removeBubbleRowCol(row: number, column: number) {
     this.bubbles[Math.max(0, row)][Math.max(0, column)] = null;
   }
 
   // Neighbourhood
+  /**
+   * Get bubble's neighbours by type
+   * @param bubble Bubble
+   * @param type "normal" | "upper" | "lower" | "sibling"
+   */
   private getNeighborsFunction(
     bubble: Bubble,
     type: "normal" | "upper" | "lower" | "sibling"
@@ -234,7 +286,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
         if (isOK) {
           const row = rowCol.row + value[1];
           const column = rowCol.column + value[0];
-          const temp = this.getBubble(row, column);
+          const temp = this.checkRowCol({ row, column }) && this.getBubble(row, column);
           if (temp) {
             neighbors.push(temp);
           }
@@ -245,6 +297,12 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     return neighbors;
   }
 
+  /**
+   * Get empty neighbour row col
+   * @param x bubble x position
+   * @param y bubble y position
+   * @param neighbor bubble's neighbour
+   */
   getEmptyNeighbourRowCol(x: number, y: number, neighbor: Bubble): RowCol {
     let tempRowCol: RowCol;
     let minDistance = Number.MAX_VALUE;
@@ -278,7 +336,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
         column: column + offset[0],
       }
 
-      if (!this.bubbles[nRowCol.row][nRowCol.column] && nRowCol.column >= 0 && nRowCol.row >= 0) {
+      if (this.checkRowCol(nRowCol) && !this.bubbles[nRowCol.row][nRowCol.column]) {
         const nPos = this.getCoordinate(nRowCol.row, nRowCol.column);
         const distance = (new Phaser.Math.Vector2(nPos.x - x, nPos.y - y)).length();
         if (distance <= minDistance) {
@@ -291,20 +349,39 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     return tempRowCol;
   }
 
+  /**
+   * Get neighbour one step pentagon
+   * @param bubble 
+   */
   getNeighbors(bubble: Bubble) {
     return this.getNeighborsFunction(bubble, "normal");
   }
 
+  /**
+   * Get lower neigbours
+   * neighbour.y == bubble.y or row(neighbour) == row(bubble)
+   * @param bubble
+   */
   getNeighborsSameColor(bubble: Bubble) {
     return this.getNeighbors(bubble).filter(
       value => value.color === bubble.color
     );
   }
 
+  /**
+   * Get upper neigbours
+   * neighbour.y < bubble.y or row(neighbour) < row(bubble)
+   * @param bubble
+   */
   getUpperNeighbors(bubble: Bubble) {
     return this.getNeighborsFunction(bubble, "upper");
   }
 
+  /**
+   * Get lower neigbours 
+   * neighbour.y > bubble.y or row(neighbour) > row(bubble)
+   * @param bubble 
+   */
   getLowerNeighbors(bubble: Bubble) {
     return this.getNeighborsFunction(bubble, "lower");
   }
@@ -335,11 +412,13 @@ class PuzzleManager extends Phaser.GameObjects.Container {
   }
 
   // Floating Bubble
-
-  private isFloatingBubble(bubble: Bubble): boolean {
-    return bubble && bubble.y > this.tileHeight * 0.5 + this.y;
+  isBaseBubble(bubble: Bubble): boolean {
+    return !(bubble && bubble.y > this.tileHeight * 0.5 + this.y);
   }
 
+  /**
+   * Get all floating bubbles
+   */
   getAllFloatingBubble(): Array<Array<Bubble>> {
     const floatingBubbles = [];
     const processedSign: { [id: string]: boolean } = {};
@@ -354,7 +433,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
             const trace = this.traceBubble(bubble, false); // trace connected bubbles
             trace.forEach(v => {
               if (isFloating) {
-                isFloating = this.isFloatingBubble(v);
+                isFloating = !this.isBaseBubble(v);
               }
               processedSign[v.id] = true;
             });
@@ -370,6 +449,9 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     return floatingBubbles;
   }
 
+  /**
+   * Get and drop all floating bubbles
+   */
   dropAllFloatingBubbles() {
     const floatingBubbles = this.getAllFloatingBubble();
     floatingBubbles.forEach(group => {
@@ -433,6 +515,20 @@ class PuzzleManager extends Phaser.GameObjects.Container {
       return { row: 0, column: 0 };
     }
     return this.getRowCol(bubble.x, bubble.y);
+  }
+
+  /**
+   * Check row col is valid
+   * @param rowCol 
+   */
+  checkRowCol(rowCol: RowCol): boolean {
+    const { row, column } = rowCol;
+    const baseCheck = row >= 0 && row < this.rows && column >= 0;
+    if (row % 2) {
+      return baseCheck && column < this.columns - 1;
+    } else {
+      return baseCheck && column < this.columns;
+    }
   }
 
   /**

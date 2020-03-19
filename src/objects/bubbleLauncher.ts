@@ -38,7 +38,7 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
     this.isReady = true;
     this.touchPosition = null;
     this.puzzle = puzzle;
-    this.launchSpeed = 3000;
+    this.launchSpeed = 2500;
 
     this.setOrigin(0.5, 0);
 
@@ -242,11 +242,7 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
         -direction.y * this.launchSpeed
       );
 
-      const bubble = this.currentBubble;
-
-      this._scene.time.delayedCall(60, () =>
-        this.emit("launchedBubble", bubble)
-      );
+      this.emit("launchedBubble", this.currentBubble)
     }
 
     this._scene.time.delayedCall(60, () => {

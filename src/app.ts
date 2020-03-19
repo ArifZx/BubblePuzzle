@@ -14,7 +14,8 @@ const config: Phaser.Types.Core.GameConfig = {
   physics: {
     default: "arcade",
     arcade: {
-      debug: false
+      debug: false,
+      tileBias: 30
     }
   },
   backgroundColor: "#6A4775",

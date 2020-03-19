@@ -74,44 +74,37 @@ class PuzzleManager extends Phaser.GameObjects.Container {
 
   setLaunchBubble(bubble: Bubble, context?: PuzzleManager) {
     const ctx = context || this;
+    ctx.setOverlap(bubble, (current, other) => ctx.snapBubble(current, other), ctx);
     ctx.launchBubble = bubble;
-
-    ctx.setOverlap(bubble, current => ctx.snapBubble(current), ctx);
   }
 
-  snapBubble(bubble: Bubble, minSnap = 3, sameColor = true, autoPosition = true) {
+  snapBubble(bubble: Bubble, neighbor?: Bubble, minSnap = 3, sameColor = true) {
     // once snaping
+
+    if (bubble) {
+      bubble.stopImmediately();
+    }
+
+    if (neighbor) {
+      neighbor.stopImmediately();
+    }
+
     if (!this.isSnapping) {
       const min = Math.max(minSnap, 1);
       const direction = bubble.body.velocity.normalize();
       this.isSnapping = true;
-      bubble.setVelocity(0);
-      bubble.setAcceleration(0);
-      bubble.x += direction.x;
-      bubble.y += direction.y;
 
       // get temp row col bubble
-      const rowCol = this.getBubbleRowCol(bubble);
+      let rowCol: RowCol;
 
-      // checking snap must have neigbours or row col is not have a bubble
-      while (
-        autoPosition && (
-          this.getBubble(rowCol.row, rowCol.column) ||
-          (rowCol.row && !this.getNeighbors(bubble).length)
-        )
-      ) {
-        if (this.getBubble(rowCol.row, rowCol.column)) {
-          rowCol.row += 1;
-        } else {
-          rowCol.row -= 1;
-        }
-
-        rowCol.column = Math.min(
-          rowCol.column,
-          rowCol.row % 2 ? this.columns - 2 : this.columns - 1
-        );
-        bubble.setSnapPosition(this.getCoordinate(rowCol.row, rowCol.column));
+      if (neighbor) {
+        rowCol = this.getEmptyNeighbourRowCol(bubble.x, bubble.y, neighbor);
       }
+
+      if (!rowCol) {
+        rowCol = this.getBubbleRowCol(bubble);
+      }
+
 
       this.launchBubbleRowCol = rowCol;
       this.bubbles[rowCol.row][rowCol.column] = bubble;
@@ -250,6 +243,52 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     return neighbors;
   }
 
+  getEmptyNeighbourRowCol(x: number, y: number, neighbor: Bubble): RowCol {
+    let tempRowCol: RowCol;
+    let minDistance = Number.MAX_VALUE;
+    const { row, column } = this.getBubbleRowCol(neighbor);
+    const touch = neighbor.body.touching;
+
+    const offsets = [];
+
+    Object.keys(touch).forEach(key => {
+      if (touch[key]) {
+        switch (key) {
+          case 'up':
+            offsets.push(...this.neighborsOffsets[row % 2].filter(v => v[1] < 0));
+            break;
+          case 'down':
+            offsets.push(...this.neighborsOffsets[row % 2].filter(v => v[1] > 0));
+            break;
+          case 'left':
+            offsets.push(...this.neighborsOffsets[row % 2].filter(v => v[0] < 0));
+            break;
+          case 'right':
+            offsets.push(...this.neighborsOffsets[row % 2].filter(v => v[0] > 0));
+            break;
+        }
+      }
+    })
+
+    offsets.forEach(offset => {
+      const nRowCol: RowCol = {
+        row: row + offset[1],
+        column: column + offset[0],
+      }
+
+      if (!this.bubbles[nRowCol.row][nRowCol.column]) {
+        const nPos = this.getCoordinate(nRowCol.row, nRowCol.column);
+        const distance = (new Phaser.Math.Vector2(nPos.x - x, nPos.y - y)).length();
+        if (distance <= minDistance) {
+          minDistance = distance;
+          tempRowCol = nRowCol;
+        }
+      }
+    })
+
+    return tempRowCol;
+  }
+
   getNeighbors(bubble: Bubble) {
     return this.getNeighborsFunction(bubble, "normal");
   }
@@ -355,7 +394,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     ctx.bubbles.forEach(bubbles => {
       bubbles.forEach(currentBubble => {
         currentBubble &&
-          ctx.scene.physics.add.overlap(
+          ctx.scene.physics.add.collider(
             bubble,
             currentBubble,
             callback,

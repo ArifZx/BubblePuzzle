@@ -67,9 +67,28 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
     this.setContext(context);
     this.context.setColor(
       options.bubble.color[
-        Math.floor(Math.random() * options.bubble.color.length)
+      Math.floor(Math.random() * options.bubble.color.length)
       ]
     );
+  }
+
+  startMove(context?: Bubble) {
+    this.setContext(context);
+    if (this.context && this.context.body) {
+      this.context.body.immovable = false;
+      // @ts-ignore
+      this.context.body.moves = true;
+    }
+  }
+
+  stopImmediately(context?: Bubble) {
+    this.setContext(context);
+    this.context.body.stop();
+    if (this.context && this.context.body) {
+      this.context.body.immovable = true;
+      // @ts-ignore
+      this.context.body.moves = false;
+    }
   }
 
   setSnapPosition(x: number | Phaser.Math.Vector2, y?: number) {
@@ -126,9 +145,10 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
   }
 
   drop(withPop = true, callback?: () => void, context?: Bubble) {
-    if (!this.isDroped) {
-      this.setContext(context);
-      this.setCollideWorldBounds(false);
+    this.setContext(context);
+    if (!this.context.isDroped) {
+      this.context.startMove();
+      this.context.setCollideWorldBounds(false);
       this.context.setGravityY(500);
       if (withPop) {
         this.context.scene.time.addEvent({
@@ -142,7 +162,7 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
       }
     }
 
-    this.isDroped = true;
+    this.context.isDroped = true;
 
     if (callback) {
       callback();

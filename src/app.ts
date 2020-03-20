@@ -35,6 +35,8 @@ class BubblePuzzleGame extends Phaser.Game {
   }
 }
 
+document.getElementById("loading").remove();
+
 window.onload = () => {
   const game = new BubblePuzzleGame(config);
   window["game"] = game;

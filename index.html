@@ -7,7 +7,29 @@
 </head>
 
 <body style="background-color: #000000;">
-    <div id="game"></div>
+    <div id="loading" style="color: white; text-align: center; margin: 0 auto; position: absolute; left: 50%; top: 50%">
+        Loading
+    </div>
+    <div id="game" style="height: 100%;"></div>
+    <script>
+        let loadingText = "";
+        let counter = 0;
+        const loadingHandler = setInterval(() => {
+            const loadingElement = document.getElementById("loading");
+            if(loadingElement) {
+                if(counter % 4 === 0) {
+                    loadingText = "Loading";
+                } else {
+                    loadingText += ".";
+                }
+
+                loadingElement.innerHTML = loadingText;
+            } else {
+                clearInterval(loadingHandler);
+            }
+            counter++;
+        }, 1000)
+    </script>
 </body>
 
 </html>

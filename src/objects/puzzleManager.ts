@@ -389,7 +389,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
 
     const offsets = [];
     const touch = neighbor.body.touching;
-    this.neighborsOffsets[row % 2].forEach(offset => {
+    this.neighborsOffsets[this.checkOddRow(row)].forEach(offset => {
       if (touch.up && offset[1] < 0) {
         offsets.push(offset);
       }
@@ -581,7 +581,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     let temp = new Phaser.Math.Vector2();
     temp.x = (column + 1) * this.tileWidth - this.tileWidth * 0.5 + this.x;
 
-    if (row % 2) {
+    if (this.checkOddRow(row)) {
       temp.x += this.tileWidth * 0.5;
     }
 
@@ -612,7 +612,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
   checkRowCol(rowCol: RowCol): boolean {
     const { row, column } = rowCol;
     const baseCheck = row >= 0 && row < this.rows && column >= 0;
-    if (row % 2) {
+    if (this.checkOddRow(row)) {
       return baseCheck && column < this.columns - 1;
     } else {
       return baseCheck && column < this.columns;
@@ -636,7 +636,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
       this.rows
     );
 
-    const tempX = temp.row % 2 ? x - this.tileWidth * 0.5 : x;
+    const tempX = this.checkOddRow(temp.row) ? x - this.tileWidth * 0.5 : x;
 
     temp.column = Math.min(
       Math.round((tempX + this.tileWidth * 0.5 - this.x) / this.tileWidth - 1),
@@ -647,7 +647,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     temp.column = Math.max(0, temp.column);
     temp.column = Math.min(
       temp.column,
-      temp.row % 2 ? this.columns - 2 : this.columns - 1
+      this.checkOddRow(temp.row) ? this.columns - 2 : this.columns - 1
     );
 
     return temp;

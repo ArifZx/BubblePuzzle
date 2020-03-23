@@ -49,10 +49,12 @@ class PuzzleManager extends Phaser.GameObjects.Container {
   private _scene: Phaser.Scene;
   private _time: Phaser.Time.Clock;
 
-  constructor(scene: Phaser.Scene, x: number, y: number) {
-    super(scene, x, y);
+  constructor(scene: Phaser.Scene, x: number, y: number, width?: number, height?: number) {
 
-    this.tileWidth = (scene.game.config.width as number) / this.columns;
+    super(scene, x, y, []);
+    this.width = width || (scene.game.config.width as number);
+    this.height = height || (scene.game.config.height as number);
+    this.tileWidth = this.width / this.columns;
     this.tileHeight = this.tileWidth;
 
     this.bubbles = [];
@@ -85,11 +87,12 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     this.columns = column ? Math.max(1, Math.abs(column)) : this.columns;
     this.rows = row ? Math.max(1, Math.abs(row)) : this.rows;
 
-    this.tileWidth = (this._scene.game.config.width as number) / this.columns;
+    this.tileWidth = this.width / this.columns;
     this.tileHeight = this.tileWidth;
 
     this.bubbleScale = (0.75 * this.tileWidth) / 90;
     this.initRows = Math.min(this.rows, initRows);
+
   }
 
   /**

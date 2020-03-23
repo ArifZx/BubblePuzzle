@@ -39,7 +39,7 @@ class GameScene extends Phaser.Scene {
 
     const scoreboard = new Scoreboard(this, 0, 0);
 
-    let puzzle = new Puzzle(this, 0, 90);
+    let puzzle = new Puzzle(this, 0, 90, (width as number));
     puzzle.generateBubbles();
     this.fpsText = new Phaser.GameObjects.Text(this, 0, (height as number) - 50, "00", {
       color: "#FFFFFF",

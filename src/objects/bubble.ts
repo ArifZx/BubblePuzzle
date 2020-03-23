@@ -13,6 +13,8 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
   blopSFX: Phaser.Sound.BaseSound;
   snapPosition: Phaser.Math.Vector2;
   snapEvent: Phaser.Time.TimerEvent;
+  row: number;
+  column: number;
 
   private _scene: Phaser.Scene;
   private _gameHeight: number;
@@ -28,12 +30,14 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
 
     this.isSnaped = false;
     this.id = Phaser.Utils.String.UUID();
+    this.row = -1;
+    this.column = -1;
 
     this.setColor(options.bubble.color[0]);
     this.setScale(0.75);
     this.setDepth(1);
 
-    this.setCircle(61, 30, 30);
+    this.setCircle(60, 28, 28);
     this.setCollideWorldBounds(true);
     this.setBounce(1);
 
@@ -53,6 +57,11 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
     });
   }
 
+  setRowCol(row: number, column: number) {
+    this.row = Math.abs(row);
+    this.column = Math.abs(column);
+  }
+
   setContext(context?: Bubble) {
     this.context = context || this;
   }
@@ -61,6 +70,13 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
     this.setContext(context);
     this.context.color = color;
     this.context.setTint(color);
+  }
+
+  setNumberColor(number: number, context?: Bubble) {
+    this.setContext(context);
+    this.context.setColor(
+      options.bubble.color[number]
+    );
   }
 
   setRandomColor(context?: Bubble) {
@@ -77,7 +93,7 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
     if (this.context && this.context.body) {
       this.context.body.immovable = false;
       // @ts-ignore
-      this.context.body.moves = true;
+      (this.context.body as Physics.Arcade.Body).moves = true;
     }
   }
 
@@ -87,7 +103,7 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
     if (this.context && this.context.body) {
       this.context.body.immovable = true;
       // @ts-ignore
-      this.context.body.moves = false;
+      (this.context.body as Physics.Arcade.Body).moves = false;
     }
   }
 

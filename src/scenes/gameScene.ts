@@ -11,11 +11,14 @@ class GameScene extends Phaser.Scene {
   fpsText: Phaser.GameObjects.Text;
   isPaused: boolean;
 
+  godMode: boolean;
+
   constructor() {
     super({
       key: "GameScene"
     });
 
+    this.godMode = false;
     this.isPaused = false;
   }
 
@@ -51,6 +54,11 @@ class GameScene extends Phaser.Scene {
     this.input.on(
       "pointerdown",
       pointer => {
+
+        if(!this.godMode) {
+          return;
+        }
+
         const rowCol = puzzle.getRowCol(pointer.x, pointer.y);
         const bubble = puzzle.getBubbleByRowCol(rowCol);
         if (bubble) {
@@ -61,6 +69,25 @@ class GameScene extends Phaser.Scene {
       },
       this
     );
+
+    const cheat = this.input.keyboard.createCombo([
+      Phaser.Input.Keyboard.KeyCodes.H,
+      Phaser.Input.Keyboard.KeyCodes.E,
+      Phaser.Input.Keyboard.KeyCodes.S,
+      Phaser.Input.Keyboard.KeyCodes.O,
+      Phaser.Input.Keyboard.KeyCodes.Y,
+      Phaser.Input.Keyboard.KeyCodes.A,
+      Phaser.Input.Keyboard.KeyCodes.M,
+    ], {
+      resetOnMatch: true,
+      resetOnWrongKey: true,
+    });
+
+    // assume only one cheat
+    this.input.keyboard.on("keycombomatch", (combo, event) => {
+      this.godMode = !this.godMode;
+      console.log("God mode is", this.godMode);
+    }, this); 
 
     const launcher = new BubbleLauncher(
       this,

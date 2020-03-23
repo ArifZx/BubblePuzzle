@@ -1,8 +1,15 @@
 import Bubble from "./bubble";
 
-type RowCol = {
+export type RowCol = {
   row: number;
   column: number;
+};
+
+export type PuzzleConfig = {
+  row?: number;
+  column?: number;
+  initRow?: number;
+  data?: string;
 };
 
 class PuzzleManager extends Phaser.GameObjects.Container {
@@ -32,6 +39,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
 
   rows = 11;
   columns = 8;
+  bubbleScale = 0.75;
 
   initRows = 5;
 
@@ -53,6 +61,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     scene.add.existing(this);
     this._scene = scene;
     this._time = scene.time;
+    this.setupBoard();
   }
 
   get game(): Phaser.Game {
@@ -72,14 +81,29 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     }
   }
 
+  setupBoard(row = 11, column = 8, initRows = 5) {
+    this.columns = column ? Math.max(1, Math.abs(column)) : this.columns;
+    this.rows = row ? Math.max(1, Math.abs(row)) : this.rows;
+
+    this.tileWidth = (this._scene.game.config.width as number) / this.columns;
+    this.tileHeight = this.tileWidth;
+
+    this.bubbleScale = (0.75 * this.tileWidth) / 90;
+    this.initRows = Math.min(this.rows, initRows);
+  }
+
   /**
    * Set bubble when bubble is launch from launcher
-   * @param bubble 
-   * @param context 
+   * @param bubble
+   * @param context
    */
   setLaunchBubble(bubble: Bubble, context?: PuzzleManager) {
     const ctx = context || this;
-    ctx.setOverlap(bubble, (current, other) => ctx.snapBubble(current, other), ctx);
+    ctx.setOverlap(
+      bubble,
+      (current, other) => ctx.snapBubble(current, other),
+      ctx
+    );
     ctx.launchBubble = bubble;
   }
 
@@ -88,10 +112,10 @@ class PuzzleManager extends Phaser.GameObjects.Container {
    * minSnap:
    *  default: 3
    *  min: 1
-   * @param bubble 
-   * @param neighbor 
-   * @param minSnap 
-   * @param sameColor 
+   * @param bubble
+   * @param neighbor
+   * @param minSnap
+   * @param sameColor
    */
   snapBubble(bubble: Bubble, neighbor?: Bubble, minSnap = 3, sameColor = true) {
     // once snaping
@@ -106,7 +130,6 @@ class PuzzleManager extends Phaser.GameObjects.Container {
 
     if (!this.isSnapping) {
       const min = Math.max(minSnap, 1);
-      const direction = bubble.body.velocity.normalize();
       this.isSnapping = true;
 
       // get temp row col bubble
@@ -120,8 +143,8 @@ class PuzzleManager extends Phaser.GameObjects.Container {
         rowCol = this.getBubbleRowCol(bubble);
       }
 
-
       this.launchBubbleRowCol = rowCol;
+      bubble.setRowCol(rowCol.row, rowCol.column);
       this.bubbles[rowCol.row][rowCol.column] = bubble;
       bubble.setSnapPosition(this.getCoordinate(rowCol.row, rowCol.column));
 
@@ -177,8 +200,8 @@ class PuzzleManager extends Phaser.GameObjects.Container {
 
   /**
    * Get bubble by row and column
-   * @param row 
-   * @param column 
+   * @param row
+   * @param column
    */
   getBubble(row: number, column: number) {
     if (row >= 0 && column >= 0 && row < this.rows && column < this.columns) {
@@ -190,7 +213,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
 
   /**
    * Get bubble by RowCol
-   * @param rowCol 
+   * @param rowCol
    */
   getBubbleByRowCol(rowCol: RowCol) {
     return this.getBubble(rowCol.row, rowCol.column);
@@ -198,8 +221,8 @@ class PuzzleManager extends Phaser.GameObjects.Container {
 
   /**
    * Get bubble by coordinate position
-   * @param x 
-   * @param y 
+   * @param x
+   * @param y
    */
   getBubbleByCoordinate(x: number, y: number) {
     const rowCol = this.getRowCol(x, y);
@@ -208,32 +231,88 @@ class PuzzleManager extends Phaser.GameObjects.Container {
 
   /**
    * Generate bubbles
-   * @param row 
-   * @param column 
+   * @param row
+   * @param column
    */
-  generateBubbles(row?: number, column?: number) {
-    const maxRow = row ? Math.max(0, Math.min(row, this.rows)) : this.rows;
-    for (let _row = 0; _row < maxRow; _row++) {
-      this.bubbles[_row] = [];
-      let maxColumns = column ? Math.max(0, Math.min(column, this.columns)) : this.columns;
-      maxColumns = _row % 2 ? maxColumns - 1 : maxColumns;
-      for (let _column = 0; _column < maxColumns; _column++) {
-        if (_row < this.initRows) {
-          const coord = this.getCoordinate(_row, _column);
-          const bubble = new Bubble(this.scene, coord.x, coord.y);
-          bubble.setRandomColor();
-          this.bubbles[_row][_column] = bubble;
-        } else {
-          this.bubbles[_row][_column] = undefined;
+  generateBubbles(config?: PuzzleConfig) {
+    const puzzleData: number[][] = [];
+    if (config) {
+      const { row, column, initRow, data } = config;
+      if (data) {
+        let maxColumns = 0;
+        data.split("\n").forEach(line => {
+          const chars: number[] = [];
+          for (let i = 0; i < line.length; i++) {
+            try {
+              chars.push(parseInt(line[i]));
+            } catch (error) {
+              console.error(`Line[${i}]: '${line[i]}' is not a number`);
+            }
+
+            if (chars.length > maxColumns) {
+              maxColumns = chars.length;
+            }
+          }
+
+          puzzleData.push(chars);
+        });
+
+        this.setupBoard(
+          config.row || puzzleData.length,
+          config.column || maxColumns,
+          config.initRow
+        );
+      } else {
+        this.setupBoard(row, column, initRow);
+      }
+    }
+
+    this.bubbles = [];
+
+    // if has data
+    if (puzzleData.length) {
+      // Loop every puzzleData
+      for (let _row = 0; _row < puzzleData.length; _row++) {
+        this.bubbles.push(Array(puzzleData[_row].length));
+        for (let _column = 0; _column < puzzleData[_row].length; _column++) {
+          if (_row < this.initRows) {
+            const coord = this.getCoordinate(_row, _column);
+            const bubble = new Bubble(this.scene, coord.x, coord.y);
+            bubble.setNumberColor(puzzleData[_row][_column]);
+            bubble.setScale(this.bubbleScale);
+            bubble.setRowCol(_row, _column);
+            this.bubbles[_row][_column] = bubble;
+          } else {
+            this.bubbles[_row][_column] = undefined;
+          }
         }
-        // this.bubbles[_row][_column] = undefined;
+      }
+    } else {
+      // Normal loop
+      const maxRow = this.rows;
+      for (let _row = 0; _row < maxRow; _row++) {
+        // check manual row is odd
+        const maxColumns = _row % 2 ? this.columns - 1 : this.columns;
+        this.bubbles.push(new Array(maxColumns));
+        for (let _column = 0; _column < maxColumns; _column++) {
+          if (_row < this.initRows) {
+            const coord = this.getCoordinate(_row, _column);
+            const bubble = new Bubble(this.scene, coord.x, coord.y);
+            bubble.setRandomColor();
+            bubble.setScale(this.bubbleScale);
+            bubble.setRowCol(_row, _column);
+            this.bubbles[_row][_column] = bubble;
+          } else {
+            this.bubbles[_row][_column] = undefined;
+          }
+        }
       }
     }
   }
 
   /**
    * Remove bubble from puzzle
-   * @param bubble 
+   * @param bubble
    */
   removeBubble(bubble: Bubble) {
     if (bubble) {
@@ -264,7 +343,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     const neighbors: Bubble[] = [];
     if (bubble) {
       const rowCol = this.getBubbleRowCol(bubble);
-      this.neighborsOffsets[rowCol.row % 2].forEach(value => {
+      this.neighborsOffsets[this.checkOddRow(rowCol.row)].forEach(value => {
         let isOK = false;
 
         switch (type) {
@@ -285,7 +364,8 @@ class PuzzleManager extends Phaser.GameObjects.Container {
         if (isOK) {
           const row = rowCol.row + value[1];
           const column = rowCol.column + value[0];
-          const temp = this.checkRowCol({ row, column }) && this.getBubble(row, column);
+          const temp =
+            this.checkRowCol({ row, column }) && this.getBubble(row, column);
           if (temp) {
             neighbors.push(temp);
           }
@@ -330,25 +410,31 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     offsets.forEach(offset => {
       const nRowCol: RowCol = {
         row: row + offset[1],
-        column: column + offset[0],
-      }
+        column: column + offset[0]
+      };
 
-      if (this.checkRowCol(nRowCol) && !this.bubbles[nRowCol.row][nRowCol.column]) {
+      if (
+        this.checkRowCol(nRowCol) &&
+        !this.bubbles[nRowCol.row][nRowCol.column]
+      ) {
         const nPos = this.getCoordinate(nRowCol.row, nRowCol.column);
-        const distance = (new Phaser.Math.Vector2(nPos.x - x, nPos.y - y)).length();
+        const distance = new Phaser.Math.Vector2(
+          nPos.x - x,
+          nPos.y - y
+        ).length();
         if (distance <= minDistance) {
           minDistance = distance;
           tempRowCol = nRowCol;
         }
       }
-    })
+    });
 
     return tempRowCol;
   }
 
   /**
    * Get neighbour one step pentagon
-   * @param bubble 
+   * @param bubble
    */
   getNeighbors(bubble: Bubble) {
     return this.getNeighborsFunction(bubble, "normal");
@@ -375,9 +461,9 @@ class PuzzleManager extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Get lower neigbours 
+   * Get lower neigbours
    * neighbour.y > bubble.y or row(neighbour) > row(bubble)
-   * @param bubble 
+   * @param bubble
    */
   getLowerNeighbors(bubble: Bubble) {
     return this.getNeighborsFunction(bubble, "lower");
@@ -507,16 +593,21 @@ class PuzzleManager extends Phaser.GameObjects.Container {
    * Get bubble's row and column number
    * @param bubble
    */
-  getBubbleRowCol(bubble: Bubble) {
+  getBubbleRowCol(bubble: Bubble): RowCol {
     if (!bubble) {
       return { row: 0, column: 0 };
     }
+
+    if (bubble.row >= 0) {
+      return { row: bubble.row, column: bubble.column };
+    }
+
     return this.getRowCol(bubble.x, bubble.y);
   }
 
   /**
    * Check row col is valid
-   * @param rowCol 
+   * @param rowCol
    */
   checkRowCol(rowCol: RowCol): boolean {
     const { row, column } = rowCol;
@@ -526,6 +617,10 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     } else {
       return baseCheck && column < this.columns;
     }
+  }
+
+  checkOddRow(row: number) {
+    return this.bubbles[row] && this.bubbles[row].length % 2;
   }
 
   /**

@@ -117,7 +117,6 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
         },
         this
       );
-
   }
 
   redraw() {
@@ -203,6 +202,9 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
       const generatedBubble = new Bubble(this._scene, this.x, this.y);
       this.currentBubble = generatedBubble;
       this.currentBubble.setRandomColor();
+      this.currentBubble.setScale(
+        (this.puzzle && this.puzzle.bubbleScale) || 0.75
+      );
 
       this._scene.time.delayedCall(100, () =>
         this.emit("generatedBubble", generatedBubble)
@@ -242,7 +244,7 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
         -direction.y * this.launchSpeed
       );
 
-      this.emit("launchedBubble", this.currentBubble)
+      this.emit("launchedBubble", this.currentBubble);
     }
 
     this._scene.time.delayedCall(60, () => {

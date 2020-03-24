@@ -53,7 +53,7 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
       delay: 100,
       callbackScope: this,
       callback: () => {
-        if(!this._outCameraHandler && this._mainCamera && !this._mainCamera.cull([this]).length) {
+        if(this.isDroped && !this._outCameraHandler && this._mainCamera && !this._mainCamera.cull([this]).length) {
           this._outCameraHandler = scene.time.delayedCall(Phaser.Math.Between(20, 100), () => this.pop());
         }
       }
@@ -169,6 +169,7 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
       this.context.startMove();
       this.context && this.context.setCollideWorldBounds(false);
       this.context.setGravityY(500);
+      this._scene.physics.world.colliders.getActive().filter(coll => coll.name === this.id).forEach(v => v.destroy());
       if (withPop) {
         this.context.scene.time.addEvent({
           delay: Phaser.Math.Between(200, 500),

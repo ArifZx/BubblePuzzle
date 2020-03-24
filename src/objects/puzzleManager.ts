@@ -571,14 +571,17 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     const ctx = context || this;
     ctx.bubbles.forEach(bubbles => {
       bubbles.forEach(currentBubble => {
-        currentBubble &&
-          ctx.scene.physics.add.collider(
+        if(currentBubble) {
+          const collider  = ctx.scene.physics.add.collider(
             bubble,
             currentBubble,
             callback,
             null,
             this
           );
+
+          collider.setName(currentBubble.id);
+        }
       });
     });
   }

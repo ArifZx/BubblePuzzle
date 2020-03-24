@@ -19,10 +19,13 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
   private _scene: Phaser.Scene;
   private _gameHeight: number;
   private _displayHeight: number;
+  private _mainCamera: Phaser.Cameras.Scene2D.Camera;
+  private _outCameraHandler: Phaser.Time.TimerEvent;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, options.bubble.texture.name);
     this._scene = scene;
+    this._mainCamera = scene.cameras.main;
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
@@ -50,8 +53,8 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
       delay: 100,
       callbackScope: this,
       callback: () => {
-        if (this.y > this._gameHeight * 0.8) {
-          scene.time.delayedCall(Phaser.Math.Between(20, 80), () => this.pop());
+        if(!this._outCameraHandler && this._mainCamera && !this._mainCamera.cull([this]).length) {
+          this._outCameraHandler = scene.time.delayedCall(Phaser.Math.Between(20, 100), () => this.pop());
         }
       }
     });
@@ -164,7 +167,7 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
     this.setContext(context);
     if (!this.context.isDroped) {
       this.context.startMove();
-      this.context.setCollideWorldBounds(false);
+      this.context && this.context.setCollideWorldBounds(false);
       this.context.setGravityY(500);
       if (withPop) {
         this.context.scene.time.addEvent({

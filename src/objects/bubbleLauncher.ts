@@ -5,7 +5,6 @@ import Puzzle from "./puzzleManager";
 class BubbleLauncher extends Phaser.GameObjects.Rectangle {
   touchPosition: Phaser.Math.Vector2;
   isTracing: boolean;
-  isReady: boolean;
   arrow: Phaser.GameObjects.Sprite;
 
   guidePointLength: number;
@@ -23,6 +22,7 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
 
   puzzle: Puzzle;
   currentBubble: Bubble;
+  nextBubble: Bubble;
 
   splatSFX: Phaser.Sound.BaseSound;
 
@@ -35,7 +35,6 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
     this._scene = scene;
 
     this.isTracing = false;
-    this.isReady = true;
     this.touchPosition = null;
     this.puzzle = puzzle;
     this.launchSpeed = 2500;
@@ -198,10 +197,16 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
 
   generateBubble() {
     if (!this.currentBubble) {
-      this.isReady = false;
-      const generatedBubble = new Bubble(this._scene, this.x, this.y);
+      const generatedBubble = this.nextBubble || new Bubble(this._scene, this.x, this.y);
       this.currentBubble = generatedBubble;
-      this.currentBubble.setRandomColor();
+      
+      if(!this.nextBubble) {
+        this.currentBubble.setRandomColor();
+      } else {
+        this.currentBubble.setPosition(this.x, this.y);
+      }
+
+      this.nextBubble = null;
       this.currentBubble.setScale(
         (this.puzzle && this.puzzle.bubbleScale) || 0.75
       );
@@ -209,16 +214,13 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
       this._scene.time.delayedCall(100, () =>
         this.emit("generatedBubble", generatedBubble)
       );
-
-      this._scene.time.delayedCall(
-        500,
-        () => {
-          this.isReady = true;
-        },
-        null,
-        this
-      );
     }
+
+    if(!this.nextBubble && this.currentBubble) {
+      this.nextBubble = new Bubble(this._scene, this.x + 90, this.y + 45);
+      this.nextBubble.setRandomColor();
+    }
+
   }
 
   showArrow() {

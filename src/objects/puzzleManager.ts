@@ -39,6 +39,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
 
   rows = 11;
   columns = 8;
+  isColumnOdd = false;
   bubbleScale = 0.75;
 
   initRows = 5;
@@ -92,6 +93,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
 
     this.bubbleScale = (0.75 * this.tileWidth) / 90;
     this.initRows = Math.min(this.rows, initRows);
+    this.isColumnOdd = !!(this.columns % 2);
 
   }
 
@@ -352,7 +354,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     const neighbors: Bubble[] = [];
     if (bubble) {
       const rowCol = this.getBubbleRowCol(bubble);
-      this.neighborsOffsets[this.checkOddRow(rowCol.row)].forEach(value => {
+      this.neighborsOffsets[this.checkLongRow(rowCol.row)].forEach(value => {
         let isOK = false;
 
         switch (type) {
@@ -398,7 +400,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
 
     const offsets = [];
     const touch = neighbor.body.touching;
-    this.neighborsOffsets[this.checkOddRow(row)].forEach(offset => {
+    this.neighborsOffsets[this.checkLongRow(row)].forEach(offset => {
       if (touch.up && offset[1] < 0) {
         offsets.push(offset);
       }
@@ -590,7 +592,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     let temp = new Phaser.Math.Vector2();
     temp.x = (column + 1) * this.tileWidth - this.tileWidth * 0.5 + this.x;
 
-    if (this.checkOddRow(row)) {
+    if (this.checkLongRow(row)) {
       temp.x += this.tileWidth * 0.5;
     }
 
@@ -621,15 +623,27 @@ class PuzzleManager extends Phaser.GameObjects.Container {
   checkRowCol(rowCol: RowCol): boolean {
     const { row, column } = rowCol;
     const baseCheck = row >= 0 && row < this.rows && column >= 0;
-    if (this.checkOddRow(row)) {
+    const isLongRow = this.checkLongRow(row);
+    
+    if(isLongRow === undefined) {
+      return false;
+    }
+
+    if (isLongRow) {
       return baseCheck && column < this.columns - 1;
     } else {
       return baseCheck && column < this.columns;
     }
   }
 
-  checkOddRow(row: number) {
-    return this.bubbles[row] && this.bubbles[row].length % 2;
+  checkLongRow(row: number) {
+    const isOdd = this.bubbles[row] && this.bubbles[row].length % 2;
+    
+    if(isOdd === undefined) {
+      return isOdd;
+    }
+
+    return Math.abs(isOdd - (this.isColumnOdd ? 1 : 0));
   }
 
   /**
@@ -645,7 +659,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
       this.rows
     );
 
-    const tempX = this.checkOddRow(temp.row) ? x - this.tileWidth * 0.5 : x;
+    const tempX = this.checkLongRow(temp.row) ? x - this.tileWidth * 0.5 : x;
 
     temp.column = Math.min(
       Math.round((tempX + this.tileWidth * 0.5 - this.x) / this.tileWidth - 1),
@@ -656,7 +670,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     temp.column = Math.max(0, temp.column);
     temp.column = Math.min(
       temp.column,
-      this.checkOddRow(temp.row) ? this.columns - 2 : this.columns - 1
+      this.checkLongRow(temp.row) ? this.columns - 2 : this.columns - 1
     );
 
     return temp;

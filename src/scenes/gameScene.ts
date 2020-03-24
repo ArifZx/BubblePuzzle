@@ -4,11 +4,13 @@ import Puzzle from "../objects/puzzleManager";
 import BubbleLauncher from "../objects/bubbleLauncher";
 import Scoreboard from "../objects/scoreboard";
 import ActionPanel from "../objects/actionPanel";
+import options from "../options";
 
 class GameScene extends Phaser.Scene {
 
   bubble: Bubble;
   fpsText: Phaser.GameObjects.Text;
+  cheatSFX: Phaser.Sound.BaseSound;
   isPaused: boolean;
 
   godMode: boolean;
@@ -23,6 +25,10 @@ class GameScene extends Phaser.Scene {
   }
 
   init(data): void { }
+
+  preload(): void {
+    this.cheatSFX = this.sound.add(options.bubble.sfx.blop.name);
+  }
 
   create(): void {
     const { height, width } = this.game.config;
@@ -86,6 +92,9 @@ class GameScene extends Phaser.Scene {
     // assume only one cheat
     this.input.keyboard.on("keycombomatch", (combo, event) => {
       this.godMode = !this.godMode;
+      this.cheatSFX.play({
+        volume: this.godMode ? 1 : 0.5,
+      });
       console.log("God mode is", this.godMode);
     }, this); 
 

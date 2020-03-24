@@ -247,7 +247,13 @@ class PuzzleManager extends Phaser.GameObjects.Container {
           const chars: number[] = [];
           for (let i = 0; i < line.length; i++) {
             try {
-              chars.push(parseInt(line[i]));
+
+              if(line[i].toLowerCase()  === 'x') {
+                chars.push(-1); // empty slot
+              } else {
+                chars.push(parseInt(line[i])); // bubble slot
+              }
+              
             } catch (error) {
               console.error(`Line[${i}]: '${line[i]}' is not a number`);
             }
@@ -278,14 +284,14 @@ class PuzzleManager extends Phaser.GameObjects.Container {
       for (let _row = 0; _row < puzzleData.length; _row++) {
         this.bubbles.push(Array(puzzleData[_row].length));
         for (let _column = 0; _column < puzzleData[_row].length; _column++) {
-          if (_row < this.initRows) {
+          if (_row < this.initRows && puzzleData[_row][_column] >= 0) { // bubble slot
             const coord = this.getCoordinate(_row, _column);
             const bubble = new Bubble(this.scene, coord.x, coord.y);
             bubble.setNumberColor(puzzleData[_row][_column]);
             bubble.setScale(this.bubbleScale);
             bubble.setRowCol(_row, _column);
             this.bubbles[_row][_column] = bubble;
-          } else {
+          } else { // empty slot
             this.bubbles[_row][_column] = undefined;
           }
         }

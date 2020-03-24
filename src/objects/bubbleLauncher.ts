@@ -217,8 +217,12 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
     }
 
     if(!this.nextBubble && this.currentBubble) {
-      this.nextBubble = new Bubble(this._scene, this.x + 90, this.y + 45);
+      const offset = this.currentBubble.width * 0.33;
+      this.nextBubble = new Bubble(this._scene, this.x + offset, this.y + offset);
       this.nextBubble.setRandomColor();
+      this.nextBubble.setScale(
+        ((this.puzzle && this.puzzle.bubbleScale) || 0.75) * 0.5
+      );
     }
 
   }

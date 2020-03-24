@@ -9,7 +9,7 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
   isPoped = false;
   isDroped = false;
   id: string;
-  collider: Physics.Arcade.Collider;
+  colliders: Physics.Arcade.Collider[];
   blopSFX: Phaser.Sound.BaseSound;
   snapPosition: Phaser.Math.Vector2;
   snapEvent: Phaser.Time.TimerEvent;
@@ -31,6 +31,7 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
 
     this.blopSFX = scene.sound.add(options.bubble.sfx.blop.name);
 
+    this.colliders = [];
     this.isSnaped = false;
     this.id = Phaser.Utils.String.UUID();
     this.row = -1;
@@ -110,8 +111,16 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  removeCollider(){
-    if(this._scene) {
+  addCollider(collider: Phaser.Physics.Arcade.Collider) {
+    this.colliders.push(collider);
+  }
+
+  removeColliders(){
+    if(this.colliders.length) {
+      while(this.colliders.length) {
+        this.colliders.pop().destroy();
+      } 
+    } else if (this._scene) {
       this._scene.physics.world.colliders.getActive().forEach(v => {
         if(v.name === this.id) {
           v.destroy();

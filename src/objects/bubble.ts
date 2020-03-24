@@ -78,7 +78,7 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
   setNumberColor(number: number, context?: Bubble) {
     this.setContext(context);
     this.context.setColor(
-      options.bubble.color[number]
+      options.bubble.color[number % options.bubble.color.length]
     );
   }
 

@@ -23,16 +23,19 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
   puzzle: Puzzle;
   currentBubble: Bubble;
   nextBubble: Bubble;
+  colorOrder: number[];
 
   splatSFX: Phaser.Sound.BaseSound;
 
   private _scene: Phaser.Scene;
+  private _counter;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, puzzle: Puzzle) {
+  constructor(scene: Phaser.Scene, x: number, y: number, puzzle: Puzzle, colorOrder?: number[]) {
     const { width, height } = scene.game.config;
 
     super(scene, x, y, width as number, 0.25 * (height as number), 0x7f6388);
     this._scene = scene;
+    this._counter = 0;
 
     this.isTracing = false;
     this.touchPosition = null;
@@ -65,9 +68,15 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
     this.leftBorder = 0;
     this.rightBorder = width as number;
 
+    this.colorOrder = colorOrder || [];
     this.generateBubble();
-
     this.setLaunchInteractive();
+  }
+
+  setColorOrder(order: number[], forceGenerateBubble = true) {
+    this._counter = 0;
+    this.colorOrder = order;
+    this.generateBubble(forceGenerateBubble);
   }
 
   /**
@@ -195,13 +204,25 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
     }
   }
 
-  generateBubble() {
+  generateBubble(force = false) {
+
+    if(force) {
+      this.currentBubble && this.currentBubble.destroy();
+      this.nextBubble && this.nextBubble.destroy();
+      this.currentBubble = null;
+      this.nextBubble = null;
+    }
+
     if (!this.currentBubble) {
       const generatedBubble = this.nextBubble || new Bubble(this._scene, this.x, this.y);
       this.currentBubble = generatedBubble;
       
       if(!this.nextBubble) {
-        this.currentBubble.setRandomColor();
+        if(this.colorOrder.length) {
+          this.currentBubble.setNumberColor(this.colorOrder[this._counter % this.colorOrder.length]);
+        } else {
+          this.currentBubble.setRandomColor();
+        }
       } else {
         this.currentBubble.setPosition(this.x, this.y);
       }
@@ -219,7 +240,11 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
     if(!this.nextBubble && this.currentBubble) {
       const offset = this.currentBubble.width * 0.33;
       this.nextBubble = new Bubble(this._scene, this.x + offset, this.y + offset);
-      this.nextBubble.setRandomColor();
+      if(this.colorOrder.length) {
+        this.nextBubble.setNumberColor(this.colorOrder[(this._counter + 1) % this.colorOrder.length]);
+      } else {
+        this.nextBubble.setRandomColor();
+      }
       this.nextBubble.setScale(
         ((this.puzzle && this.puzzle.bubbleScale) || 0.75) * 0.5
       );
@@ -251,6 +276,7 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
       );
 
       this.emit("launchedBubble", this.currentBubble);
+      this._counter++;
     }
 
     this._scene.time.delayedCall(60, () => {

@@ -118,6 +118,7 @@ class GameScene extends Phaser.Scene {
     puzzle.on("poppedBubbles", (isPoped: boolean, bubbles: Bubble[], isLastRow: boolean, isClear: boolean) => {
       // console.log("is clear:", isClear);
       // console.log(bubbles);
+      // console.log(this.physics.world.colliders.getActive().length);
       scoreboard.addScore(bubbles.length * 10);
       if (isPoped) {
         this.time.delayedCall(bubbles.length * 50, () => {

@@ -152,6 +152,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
       bubble.setRowCol(rowCol.row, rowCol.column);
       this.bubbles[rowCol.row][rowCol.column] = bubble;
       bubble.setSnapPosition(this.getCoordinate(rowCol.row, rowCol.column));
+      bubble.removeCollider();
 
       const neighbors = this.traceBubble(bubble, sameColor);
       const isPoped = neighbors.length >= min;
@@ -580,7 +581,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
             this
           );
 
-          collider.setName(currentBubble.id);
+          collider.setName(bubble.id);
         }
       });
     });

@@ -110,6 +110,16 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
+  removeCollider(){
+    if(this._scene) {
+      this._scene.physics.world.colliders.getActive().forEach(v => {
+        if(v.name === this.id) {
+          v.destroy();
+        }
+      });
+    }
+  }
+
   setSnapPosition(x: number | Phaser.Math.Vector2, y?: number) {
     if (this.snapEvent) {
       this.snapEvent.remove();
@@ -169,7 +179,6 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
       this.context.startMove();
       this.context && this.context.setCollideWorldBounds(false);
       this.context.setGravityY(500);
-      this._scene.physics.world.colliders.getActive().filter(coll => coll.name === this.id).forEach(v => v.destroy());
       if (withPop) {
         this.context.scene.time.addEvent({
           delay: Phaser.Math.Between(200, 500),

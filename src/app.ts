@@ -38,7 +38,7 @@ class BubblePuzzleGame extends Phaser.Game {
 }
 
 function startGame() {
-  document.getElementById("loading").remove();
+  document.getElementById("loading") && document.getElementById("loading").remove();
   if(!game) {
     game = new BubblePuzzleGame(config);
   }

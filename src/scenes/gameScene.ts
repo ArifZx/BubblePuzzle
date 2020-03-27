@@ -105,6 +105,10 @@ class GameScene extends Phaser.Scene {
       puzzle
     );
 
+    this.time.delayedCall(1000, () => {
+      launcher.setLaunchInteractive();
+    })
+
     launcher.on("launchedBubble", (bubble: Bubble) => {
       // console.log("launch");
       puzzle.setLaunchBubble(bubble, puzzle);

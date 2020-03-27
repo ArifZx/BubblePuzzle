@@ -37,6 +37,7 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
   private _counter: number;
   private _prevX: number;
   private _prevY: number;
+  private _bubbleWidth: number;
 
   constructor(scene: Phaser.Scene, x: number, y: number, puzzle: Puzzle, colorOrder?: number[]) {
     const { width, height } = scene.game.config;
@@ -96,8 +97,10 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
 
   preUpdate() {
     if(this.isInteractive) {
+
       const pointer = this._scene.input.activePointer;
       if(pointer.isDown) {
+
         if(!this.isTracing) {
           this.startTracing(pointer);
           this.redraw();
@@ -107,6 +110,11 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
           if(this.isTracing) {
             this.trace(pointer);
           }
+          this.redraw();
+        }
+
+        if(this.isTracing && this.currentBubble && this.pointerLength < this.currentBubble.width * this.currentBubble.scale * 0.5) {
+          this.stopTracing();
           this.redraw();
         }
 
@@ -136,6 +144,7 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
       // pointer line
       this.graphics.lineStyle(5, 0xffffff);
       this.graphics.strokeLineShape(this.pointerLine);
+      this.graphics.depth = this.depth + 2;
 
       // guide lines
       let border: "left" | "right";

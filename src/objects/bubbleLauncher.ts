@@ -5,8 +5,11 @@ import Puzzle from "./puzzleManager";
 class BubbleLauncher extends Phaser.GameObjects.Container {
   touchPosition: Phaser.Math.Vector2;
   isTracing: boolean;
+  isFlip: boolean;
+  isInteractive: boolean;
   arrow: Phaser.GameObjects.Sprite;
 
+  angle: number;
   guidePointLength: number;
   aimLength: number;
   borderLineLeft: Phaser.Geom.Line;
@@ -21,7 +24,7 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
   rectPad: Phaser.GameObjects.Rectangle;
 
   launchSpeed: number;
-  traceLength: number;
+  pointerLength: number;
 
   puzzle: Puzzle;
   currentBubble: Bubble;
@@ -47,8 +50,9 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
 
     this.rectPad = new Phaser.GameObjects.Rectangle(scene, x, y, this.width, this.height, 0x7f6388);
     this.rectPad.setOrigin(0.5, 0);
-    this.list.push(this.rectPad)
+    this.list.push(this.rectPad);
 
+    this.isInteractive = false;
     this.isTracing = false;
     this.touchPosition = null;
     this.puzzle = puzzle;
@@ -81,7 +85,7 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
 
     this.colorOrder = colorOrder || [];
     this.generateBubble();
-    this.setLaunchInteractive();
+    // this.setLaunchInteractive();
   }
 
   setColorOrder(order: number[], forceGenerateBubble = true) {
@@ -90,57 +94,39 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
     this.generateBubble(forceGenerateBubble);
   }
 
+  preUpdate() {
+    if(this.isInteractive) {
+      const pointer = this._scene.input.activePointer;
+      if(pointer.isDown) {
+        if(!this.isTracing) {
+          this.startTracing(pointer);
+          this.redraw();
+        }
+        
+        if((this._prevY !== pointer.y || this._prevX !== pointer.x)) {
+          if(this.isTracing) {
+            this.trace(pointer);
+          }
+          this.redraw();
+        }
+
+      } else if (this.isTracing) {
+        this.stopTracing();
+        if(this.currentBubble) {
+          this.launch(pointer.position.clone());
+        }
+      }
+    } else if(this.isTracing) {
+      this.stopTracing();
+    }
+  }
+
   /**
    * Set launcher interactive
    * @param active default true
    */
   setLaunchInteractive(active = true) {
-    if (!active) {
-      this.rectPad.removeInteractive();
-      return;
-    }
-
-    this.rectPad.setInteractive()
-      .on(
-        "pointerdown",
-        (pointer: Phaser.Input.Pointer) => {
-          this.startTracing(pointer);
-          this.redraw();
-        },
-        this
-      )
-      .on(
-        "pointerup",
-        (pointer: Phaser.Input.Pointer) => {
-          if (this.isTracing) {
-            this.launch(new Phaser.Math.Vector2(pointer.position));
-          }
-          this.stopTracing();
-        },
-        this
-      )
-      .on(
-        "pointerout",
-        () => {
-          this.stopTracing();
-        },
-        this
-      )
-      .on(
-        "pointermove",
-        (pointer: Phaser.Input.Pointer) => {
-          if (this.isTracing) {
-            this.trace(pointer);
-          }
-
-          if( this.isTracing && this.traceLength < 100) {
-            this.stopTracing();
-          }
-
-          this.redraw();
-        },
-        this
-      );
+    this.isInteractive = active;
   }
 
   redraw() {
@@ -222,7 +208,7 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
 
   generateBubble(force = false) {
 
-    if(force) {
+    if (force) {
       this.currentBubble && this.currentBubble.destroy();
       this.nextBubble && this.nextBubble.destroy();
       this.currentBubble = null;
@@ -232,9 +218,9 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
     if (!this.currentBubble) {
       const generatedBubble = this.nextBubble || new Bubble(this._scene, this.x, this.y);
       this.currentBubble = generatedBubble;
-      
-      if(!this.nextBubble) {
-        if(this.colorOrder.length) {
+
+      if (!this.nextBubble) {
+        if (this.colorOrder.length) {
           this.currentBubble.setNumberColor(this.colorOrder[this._counter % this.colorOrder.length]);
         } else {
           this.currentBubble.setRandomColor();
@@ -251,12 +237,14 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
       this._scene.time.delayedCall(100, () =>
         this.emit("generatedBubble", generatedBubble)
       );
+
+      this.redraw();
     }
 
-    if(!this.nextBubble && this.currentBubble) {
+    if (!this.nextBubble && this.currentBubble) {
       const offset = this.currentBubble.width * 0.33;
       this.nextBubble = new Bubble(this._scene, this.x + offset, this.y + offset);
-      if(this.colorOrder.length) {
+      if (this.colorOrder.length) {
         this.nextBubble.setNumberColor(this.colorOrder[(this._counter + 1) % this.colorOrder.length]);
       } else {
         this.nextBubble.setRandomColor();
@@ -287,8 +275,8 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
       ).normalize();
 
       this.currentBubble.setVelocity(
-        -direction.x * this.launchSpeed,
-        -direction.y * this.launchSpeed
+        direction.x * this.launchSpeed * (this.isFlip ? -1 : 1),
+        direction.y * this.launchSpeed * (this.isFlip ? -1 : 1)
       );
 
       this.emit("launchedBubble", this.currentBubble);
@@ -324,26 +312,29 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
     this.redraw();
   }
 
-  trace(pointer) {
-    const degree =
-      Phaser.Math.Angle.Between(this.x, this.y, pointer.x, pointer.y) *
-      Phaser.Math.RAD_TO_DEG;
-    const direction = new Phaser.Math.Vector2(
-      this.x - pointer.x,
-      this.y - pointer.y
-    ).normalize();
-    this.traceLength = new Phaser.Math.Vector2(
-      this.x - pointer.x,
-      this.y - pointer.y
-    ).length();
+  trace(pointer: Phaser.Input.Pointer): void {
+    const x = this.x - pointer.x;
+    const y = this.y - pointer.y;
+    const vectorPointer = new Phaser.Math.Vector2(x, y);
+    const direction = vectorPointer.clone().normalize();
+    this.pointerLength = vectorPointer.length();
+    this.isFlip = y < 90;
 
-    this.arrow.setAngle(Phaser.Math.Clamp(degree, 5, 175) - 90);
-    this.pointerLine.setTo(this.x, this.y, pointer.x, pointer.y);
+    // set arrow and lines
+    this.arrow.setAngle(direction.angle() * Phaser.Math.RAD_TO_DEG + (this.isFlip ? 90 : -90));
+    this.arrow.setAlpha(this.isFlip ? 1 : 0);
+    this.pointerLine.setTo(
+      this.x,
+      this.y,
+      this.isFlip ? this.x - direction.x * this.pointerLength: this.x,
+      this.isFlip ? this.y - direction.y * this.pointerLength: this.y
+    );
+
     this.aimLine.setTo(
       this.x,
       this.y,
-      this.x + direction.x * this.aimLength,
-      this.y + direction.y * this.aimLength
+      this.x + direction.x * this.aimLength * (this.isFlip ? 1 : -1),
+      this.y + direction.y * this.aimLength * (this.isFlip ? 1 : -1)
     );
 
     this._prevX = pointer.x;

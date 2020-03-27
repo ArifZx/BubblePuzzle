@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Puzzle Bubble</title>
-    <script id="game-script" defer src="dist/app.js"></script>
+    <!-- <script id="game-script" defer src="dist/app.js"></script> -->
   </head>
 
   <body style="background-color: #000000;">
@@ -12,19 +12,11 @@
         </div>
     </div>
     <div id="game" style="height: 100%;"></div>
+
+
     <script>
-      // const scriptLoad = document.getElementById("game-script");
-      // scriptLoad.onprogress(event => {
-      //   console.log(event.loaded, event.total);
-      // })
-
-
-      document.getElementById("game-script").addEventListener("progress", event => {
-        console.log(event.total);
-        console.log(event.loaded);
-      })
-
       let loadingText = "";
+      let loadingProgress = 0;
       let counter = 0;
       const loadingHandler = setInterval(() => {
         const loadingElement = document.getElementById("loading");
@@ -35,12 +27,31 @@
             loadingText = "." + loadingText + ".";
           }
 
-          document.getElementById("loadingText").innerHTML = loadingText;
+          document.getElementById("loadingText").innerHTML = loadingProgress.toFixed(0)+"%";
         } else {
           clearInterval(loadingHandler);
         }
         counter++;
-      }, 1000);
+      }, 100);
+
+
+      const req = new XMLHttpRequest();
+      req.addEventListener("progress", event => {
+        if(event.lengthComputable) {
+          loadingProgress = 100 * (event.loaded / event.total);
+        }
+      }, false);
+
+      req.addEventListener("load", event => {
+        const target = event.target;
+        const script = document.createElement("script");
+        script.innerHTML = target.responseText;
+        document.documentElement.appendChild(script);
+      })
+
+
+      req.open("GET", "dist/app.js");
+      req.send();
     </script>
   </body>
 </html>

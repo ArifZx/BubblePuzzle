@@ -22,6 +22,8 @@ const config: Phaser.Types.Core.GameConfig = {
   scene: [PreloadScene, GameScene]
 }
 
+let game: Phaser.Game;
+
 class BubblePuzzleGame extends Phaser.Game {
 
   global: any;
@@ -35,9 +37,21 @@ class BubblePuzzleGame extends Phaser.Game {
   }
 }
 
-document.getElementById("loading").remove();
+function startGame() {
+  document.getElementById("loading").remove();
+  if(!game) {
+    game = new BubblePuzzleGame(config);
+  }
 
-window.onload = () => {
-  const game = new BubblePuzzleGame(config);
   window["game"] = game;
 }
+
+
+window.onload = () => {
+  startGame()
+}
+
+// RUN GAME after 100ms
+setTimeout(() => {
+  startGame();
+}, 100);

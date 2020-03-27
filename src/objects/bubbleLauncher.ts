@@ -2,7 +2,7 @@ import options from "../options";
 import Bubble from "./bubble";
 import Puzzle from "./puzzleManager";
 
-class BubbleLauncher extends Phaser.GameObjects.Rectangle {
+class BubbleLauncher extends Phaser.GameObjects.Container {
   touchPosition: Phaser.Math.Vector2;
   isTracing: boolean;
   arrow: Phaser.GameObjects.Sprite;
@@ -18,7 +18,10 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
   pointerLine: Phaser.Geom.Line;
   graphics: Phaser.GameObjects.Graphics;
 
+  rectPad: Phaser.GameObjects.Rectangle;
+
   launchSpeed: number;
+  traceLength: number;
 
   puzzle: Puzzle;
   currentBubble: Bubble;
@@ -33,17 +36,23 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
   constructor(scene: Phaser.Scene, x: number, y: number, puzzle: Puzzle, colorOrder?: number[]) {
     const { width, height } = scene.game.config;
 
-    super(scene, x, y, width as number, 0.25 * (height as number), 0x7f6388);
+    // super(scene, x, y, width as number, 0.25 * (height as number), 0x7f6388);
+    super(scene, x, y);
+    this.width = width as number,
+    this.height = 0.25 * (height as number);
     this._scene = scene;
     this._counter = 0;
+
+    this.rectPad = new Phaser.GameObjects.Rectangle(scene, x, y, this.width, this.height, 0x7f6388);
+    this.rectPad.setOrigin(0.5, 0);
+    this.list.push(this.rectPad)
 
     this.isTracing = false;
     this.touchPosition = null;
     this.puzzle = puzzle;
     this.launchSpeed = 2500;
 
-    this.setOrigin(0.5, 0);
-
+    scene.add.existing(this.rectPad);
     scene.add.existing(this);
 
     this.splatSFX = scene.sound.add(options.launcher.sfx.splat.name);
@@ -85,11 +94,11 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
    */
   setLaunchInteractive(active = true) {
     if (!active) {
-      this.removeInteractive();
+      this.rectPad.removeInteractive();
       return;
     }
 
-    this.setInteractive()
+    this.rectPad.setInteractive()
       .on(
         "pointerdown",
         (pointer: Phaser.Input.Pointer) => {
@@ -121,6 +130,11 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
           if (this.isTracing) {
             this.trace(pointer);
           }
+
+          if( this.isTracing && this.traceLength < 100) {
+            this.stopTracing();
+          }
+
           this.redraw();
         },
         this
@@ -316,7 +330,12 @@ class BubbleLauncher extends Phaser.GameObjects.Rectangle {
       this.x - pointer.x,
       this.y - pointer.y
     ).normalize();
-    this.arrow.setAngle(degree - 90);
+    this.traceLength = new Phaser.Math.Vector2(
+      this.x - pointer.x,
+      this.y - pointer.y
+    ).length();
+
+    this.arrow.setAngle(Phaser.Math.Clamp(degree, 5, 175) - 90);
     this.pointerLine.setTo(this.x, this.y, pointer.x, pointer.y);
     this.aimLine.setTo(
       this.x,

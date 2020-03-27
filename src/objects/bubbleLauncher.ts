@@ -31,7 +31,9 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
   splatSFX: Phaser.Sound.BaseSound;
 
   private _scene: Phaser.Scene;
-  private _counter;
+  private _counter: number;
+  private _prevX: number;
+  private _prevY: number;
 
   constructor(scene: Phaser.Scene, x: number, y: number, puzzle: Puzzle, colorOrder?: number[]) {
     const { width, height } = scene.game.config;
@@ -343,6 +345,9 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
       this.x + direction.x * this.aimLength,
       this.y + direction.y * this.aimLength
     );
+
+    this._prevX = pointer.x;
+    this._prevY = pointer.y;
   }
 }
 

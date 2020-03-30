@@ -2,7 +2,7 @@ import "phaser";
 import Bubble from "../objects/bubble";
 import Puzzle from "../objects/puzzleManager";
 import BubbleLauncher from "../objects/bubbleLauncher";
-import Scoreboard from "../objects/scoreboard";
+import Header from "../objects/headers";
 import ActionPanel from "../objects/actionPanel";
 import options from "../options";
 
@@ -43,7 +43,7 @@ class GameScene extends Phaser.Scene {
       this.scene.restart();
     });
 
-    const scoreboard = new Scoreboard(this, 0, 0);
+    const header = new Header(this, 0, 0);
 
     let puzzle = new Puzzle(this, 0, 90, (width as number));
     puzzle.generateBubbles();
@@ -112,6 +112,7 @@ class GameScene extends Phaser.Scene {
     launcher.on("launchedBubble", (bubble: Bubble) => {
       // console.log("launch");
       puzzle.setLaunchBubble(bubble, puzzle);
+      header.counter.start();
     });
 
     puzzle.on("snapBubble", (bubble: Bubble) => {
@@ -123,26 +124,31 @@ class GameScene extends Phaser.Scene {
       // console.log("is clear:", isClear);
       // console.log(bubbles);
       // console.log(this.physics.world.colliders.getActive().length);
-      scoreboard.addScore(bubbles.length * 10);
+      header.scoreboard.addScore(bubbles.length * 10);
       if (isPoped) {
         this.time.delayedCall(bubbles.length * 50, () => {
           const floatingBubbles = puzzle.dropAllFloatingBubbles();
           // console.log(floatingBubbles);
           floatingBubbles.forEach((bubbles, i) => {
-            this.time.delayedCall((i + 1) * 500, () => {
-              scoreboard.addScore(bubbles.length * 20)
-            })
+            header.scoreboard.addScore(bubbles.length * 20);
           });
         }, null, this);
       } else if (isLastRow) {
         launcher.setLaunchInteractive(false);
         restartPanel.show();
+        header.counter.setPaused(true);
       }
 
       if (isClear) {
         launcher.setLaunchInteractive(false);
         winPanel.show();
+        header.counter.setPaused(true);
       }
+    });
+
+    header.counter.on("timesUp", () => {
+      launcher.setLaunchInteractive(false);
+      restartPanel.show();
     })
 
     const restartKey = this.input.keyboard.addKey("R");
@@ -155,6 +161,7 @@ class GameScene extends Phaser.Scene {
       this.scene.run((this.isPaused ? "run" : "pause"));
       this.isPaused = !this.isPaused;
     }, this)
+
   }
 
   update(): void {

@@ -19,7 +19,7 @@ const config: Phaser.Types.Core.GameConfig = {
     }
   },
   backgroundColor: "#6A4775",
-  scene: [PreloadScene, GameScene]
+  scene: [PreloadScene, GameScene],
 }
 
 let game: Phaser.Game;
@@ -52,6 +52,6 @@ window.onload = () => {
 }
 
 // RUN GAME after 100ms
-setTimeout(() => {
-  startGame();
-}, 100);
+// setTimeout(() => {
+//   startGame();
+// }, 100);

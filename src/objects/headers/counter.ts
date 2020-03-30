@@ -68,12 +68,23 @@ class Counter extends Phaser.GameObjects.Container {
     }
   }
 
+  addTime(seconds = 0) {
+    if(this.isTimesUp) {
+      return;
+    }
+    
+    this.counter += seconds;
+    this.updateText();
+  }
+
   setPaused(pause: boolean) {
-    this.timerHandler.paused = pause;
+    if(this.timerHandler) {
+      this.timerHandler.paused = pause;
+    }
   }
 
   updateText() {
-    this.counterText.setText(`${this.counter}s`)
+    this.counterText.setText(`${this.counter.toFixed(0)}s`)
   }
 }
 

@@ -120,36 +120,45 @@ class GameScene extends Phaser.Scene {
       this.time.delayedCall(200, () => launcher.generateBubble());
     });
 
+    restartPanel.on("show", () => {
+      console.log("SHOW")
+      launcher.setLaunchInteractive(false);
+      header.counter.setPaused(true);
+    });
+
+    winPanel.on("show", () => {
+      launcher.setLaunchInteractive(false);
+      header.counter.setPaused(true);
+    });
+
     puzzle.on("poppedBubbles", (isPoped: boolean, bubbles: Bubble[], isLastRow: boolean, isClear: boolean) => {
       // console.log("is clear:", isClear);
       // console.log(bubbles);
       // console.log(this.physics.world.colliders.getActive().length);
       header.scoreboard.addScore(bubbles.length * 10);
       if (isPoped) {
+        header.counter.addTime(bubbles.length * 1);
         this.time.delayedCall(bubbles.length * 50, () => {
           const floatingBubbles = puzzle.dropAllFloatingBubbles();
           // console.log(floatingBubbles);
           floatingBubbles.forEach((bubbles, i) => {
             header.scoreboard.addScore(bubbles.length * 20);
+            header.counter.addTime(bubbles.length * 3);
           });
         }, null, this);
       } else if (isLastRow) {
-        launcher.setLaunchInteractive(false);
         restartPanel.show();
-        header.counter.setPaused(true);
       }
 
       if (isClear) {
-        launcher.setLaunchInteractive(false);
         winPanel.show();
-        header.counter.setPaused(true);
       }
     });
 
     header.counter.on("timesUp", () => {
       launcher.setLaunchInteractive(false);
       restartPanel.show();
-    })
+    });
 
     const restartKey = this.input.keyboard.addKey("R");
     restartKey.on("up", event => {

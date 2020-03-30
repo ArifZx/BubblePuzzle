@@ -52,10 +52,12 @@ class ActionPanel extends Phaser.GameObjects.Container {
 
   hide() {
     this.container.setPosition(-1000, -1000);
+    this.emit("hide");
   }
 
   show() {
     this.container.setPosition(this.initalPosition.x, this.initalPosition.y);
+    this.emit("show");
   }
 
 

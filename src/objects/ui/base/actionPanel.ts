@@ -1,4 +1,4 @@
-import options from "../options";
+import options from "../../../options";
 
 class ActionPanel extends Phaser.GameObjects.Container {
 

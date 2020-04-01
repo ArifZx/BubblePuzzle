@@ -32,12 +32,14 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
   colorOrder: number[];
 
   splatSFX: Phaser.Sound.BaseSound;
+  isPaused: boolean;
 
   private _scene: Phaser.Scene;
   private _counter: number;
   private _prevX: number;
   private _prevY: number;
   private _bubbleWidth: number;
+  private _afterPaused: boolean;
 
   constructor(scene: Phaser.Scene, x: number, y: number, puzzle: Puzzle, colorOrder?: number[]) {
     const { width, height } = scene.game.config;
@@ -58,6 +60,8 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
     this.touchPosition = null;
     this.puzzle = puzzle;
     this.launchSpeed = 2500;
+    this.isPaused = false;
+    this._afterPaused = false;
 
     scene.add.existing(this.rectPad);
     scene.add.existing(this);
@@ -96,34 +100,47 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
   }
 
   preUpdate() {
+
     if(this.isInteractive) {
 
       const pointer = this._scene.input.activePointer;
-      if(pointer.isDown) {
+      if(this._afterPaused && !pointer.isDown) {
+        this._afterPaused = false;
+      }
 
-        if(!this.isTracing) {
-          this.startTracing(pointer);
-          this.redraw();
-        }
-        
-        if((this._prevY !== pointer.y || this._prevX !== pointer.x)) {
-          if(this.isTracing) {
-            this.trace(pointer);
-          }
-          this.redraw();
-        }
-
-        if(this.isTracing && this.currentBubble && this.pointerLength < this.currentBubble.width * this.currentBubble.scale * 0.5) {
+      if(this._afterPaused) {
+        if(this.isTracing) {
           this.stopTracing();
-          this.redraw();
         }
+      } else {
+        if(pointer.isDown) {
 
-      } else if (this.isTracing) {
-        this.stopTracing();
-        if(this.currentBubble) {
-          this.launch(pointer.position.clone());
+          if(!this.isTracing) {
+            this.startTracing(pointer);
+            this.redraw();
+          }
+          
+          if((this._prevY !== pointer.y || this._prevX !== pointer.x)) {
+            if(this.isTracing) {
+              this.trace(pointer);
+            }
+            this.redraw();
+          }
+  
+          if(this.isTracing && this.currentBubble && this.pointerLength < this.currentBubble.width * this.currentBubble.scale * 0.5) {
+            this.stopTracing();
+            this.redraw();
+          }
+  
+        } else if (this.isTracing) {
+          this.stopTracing();
+          if(this.currentBubble) {
+            this.launch(pointer.position.clone());
+          }
         }
       }
+
+      
     } else if(this.isTracing) {
       this.stopTracing();
     }
@@ -319,6 +336,18 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
     this.isTracing = false;
     this.release();
     this.redraw();
+  }
+
+  setPaused(pause = true) {
+    this.isPaused = pause;
+    if(this.isPaused) {
+      this._afterPaused = true;
+      this.release();
+      this.stopTracing();
+      this.setLaunchInteractive(false);
+    } else {
+      this.setLaunchInteractive();
+    }
   }
 
   trace(pointer: Phaser.Input.Pointer): void {

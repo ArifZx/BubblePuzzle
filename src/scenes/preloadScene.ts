@@ -21,6 +21,8 @@ class PreloadScene extends Phaser.Scene {
 
     this.load.image(options.panel.texture.name, options.panel.texture.location);
     this.load.image(options.restartButton.texture.name, options.restartButton.texture.location);
+
+    this.load.image(options.pausedButton.texture.name, options.pausedButton.texture.location);
   }
 
   create(): void {

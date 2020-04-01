@@ -1,10 +1,12 @@
 import Scoreboard from "./scoreboard";
 import Counter from  "./counter";
+import PauseButton from "./pauseButton";
 
 class Header extends Phaser.GameObjects.Rectangle {
 
   scoreboard: Scoreboard;
   counter: Counter;
+  pausedButton: PauseButton;
 
   private _scene: Phaser.Scene;
 
@@ -20,6 +22,10 @@ class Header extends Phaser.GameObjects.Rectangle {
 
     this.counter = new Counter(scene, x + 5, y + this.height * 0.25);
     this.counter.setDepth(this.depth + 1);
+
+    this.pausedButton = new PauseButton(scene, x + this.width - 50, y + this.height * 0.5);
+    this.pausedButton.setScale(1.2);
+    this.pausedButton.setDepth(this.depth + 1);
 
     scene.add.existing(this);
   }

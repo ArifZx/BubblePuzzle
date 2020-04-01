@@ -48,6 +48,14 @@ const options = {
       width: 230,
       height: 218
     }
+  },
+  pausedButton: {
+    texture: {
+      name: "paused-button",
+      location: "assets/pause.png",
+      width: 50,
+      height: 50
+    }
   }
 }
 

@@ -3,8 +3,9 @@ import Bubble from "../objects/bubble";
 import Puzzle from "../objects/puzzleManager";
 import BubbleLauncher from "../objects/bubbleLauncher";
 import Header from "../objects/headers";
-import ActionPanel from "../objects/actionPanel";
+import ActionPanel from "../objects/ui/base/actionPanel";
 import options from "../options";
+import PauseScreen from "../objects/ui/pauseScreen";
 
 class GameScene extends Phaser.Scene {
 
@@ -32,8 +33,27 @@ class GameScene extends Phaser.Scene {
 
   create(): void {
     const { height, width } = this.game.config;
-    const restartPanel = new ActionPanel(this, (width as number) * 0.5, (height as number) * 0.5, "Game Over");
-    const winPanel = new ActionPanel(this, (width as number) * 0.5, (height as number) * 0.5, "You Win");
+    const w = width as number;
+    const h = height as number;
+
+    const restartPanel = new ActionPanel(this, w * 0.5, h * 0.5, "Game Over");
+    const winPanel = new ActionPanel(this, w * 0.5, h * 0.5, "You Win");
+    const pauseScreen = new PauseScreen(this);
+    const header = new Header(this, 0, 0);
+    let puzzle = new Puzzle(this, 0, 90, w);
+    const launcher = new BubbleLauncher(this, w * 0.5, h * 0.8, puzzle);
+    const cheat = this.input.keyboard.createCombo([
+      Phaser.Input.Keyboard.KeyCodes.H,
+      Phaser.Input.Keyboard.KeyCodes.E,
+      Phaser.Input.Keyboard.KeyCodes.S,
+      Phaser.Input.Keyboard.KeyCodes.O,
+      Phaser.Input.Keyboard.KeyCodes.Y,
+      Phaser.Input.Keyboard.KeyCodes.A,
+      Phaser.Input.Keyboard.KeyCodes.M,
+    ], {
+      resetOnMatch: true,
+      resetOnWrongKey: true,
+    });
 
     restartPanel.on("action", () => {
       this.scene.restart();
@@ -43,9 +63,7 @@ class GameScene extends Phaser.Scene {
       this.scene.restart();
     });
 
-    const header = new Header(this, 0, 0);
 
-    let puzzle = new Puzzle(this, 0, 90, (width as number));
     puzzle.generateBubbles();
     this.fpsText = new Phaser.GameObjects.Text(this, 0, (height as number) - 50, "00", {
       color: "#FFFFFF",
@@ -61,7 +79,7 @@ class GameScene extends Phaser.Scene {
       "pointerdown",
       pointer => {
 
-        if(!this.godMode) {
+        if (!this.godMode) {
           return;
         }
 
@@ -76,19 +94,6 @@ class GameScene extends Phaser.Scene {
       this
     );
 
-    const cheat = this.input.keyboard.createCombo([
-      Phaser.Input.Keyboard.KeyCodes.H,
-      Phaser.Input.Keyboard.KeyCodes.E,
-      Phaser.Input.Keyboard.KeyCodes.S,
-      Phaser.Input.Keyboard.KeyCodes.O,
-      Phaser.Input.Keyboard.KeyCodes.Y,
-      Phaser.Input.Keyboard.KeyCodes.A,
-      Phaser.Input.Keyboard.KeyCodes.M,
-    ], {
-      resetOnMatch: true,
-      resetOnWrongKey: true,
-    });
-
     // assume only one cheat
     this.input.keyboard.on("keycombomatch", (combo, event) => {
       this.godMode = !this.godMode;
@@ -96,14 +101,8 @@ class GameScene extends Phaser.Scene {
         volume: this.godMode ? 1 : 0.5,
       });
       console.log("God mode is", this.godMode);
-    }, this); 
+    }, this);
 
-    const launcher = new BubbleLauncher(
-      this,
-      (this.game.config.width as number) * 0.5,
-      (this.game.config.height as number) * 0.8,
-      puzzle
-    );
 
     this.time.delayedCall(1000, () => {
       launcher.setLaunchInteractive();
@@ -159,6 +158,19 @@ class GameScene extends Phaser.Scene {
       launcher.setLaunchInteractive(false);
       restartPanel.show();
     });
+
+    header.pausedButton.on("action", () => {
+      this.isPaused = true;
+      pauseScreen.show();
+      header.counter.setPaused(true);
+      launcher.setPaused(true);
+    });
+
+    pauseScreen.on("hide", () => {
+      this.isPaused = false;
+      header.counter.setPaused(false);
+      launcher.setPaused(false);
+    })
 
     const restartKey = this.input.keyboard.addKey("R");
     restartKey.on("up", event => {

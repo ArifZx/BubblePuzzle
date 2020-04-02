@@ -36,6 +36,7 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
     this.id = Phaser.Utils.String.UUID();
     this.row = -1;
     this.column = -1;
+    this.name = this.id;
 
     this.setColor(options.bubble.color[0]);
     this.setScale(0.75);
@@ -54,7 +55,7 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
       delay: 100,
       callbackScope: this,
       callback: () => {
-        if(this.isDroped && !this._outCameraHandler && this._mainCamera && !this._mainCamera.cull([this]).length) {
+        if (this.isDroped && !this._outCameraHandler && this._mainCamera && !this._mainCamera.cull([this]).length) {
           this._outCameraHandler = scene.time.delayedCall(Phaser.Math.Between(20, 100), () => this.pop());
         }
       }
@@ -115,14 +116,14 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
     this.colliders.push(collider);
   }
 
-  removeColliders(){
-    if(this.colliders.length) {
-      while(this.colliders.length) {
+  removeColliders() {
+    if (this.colliders.length) {
+      while (this.colliders.length) {
         this.colliders.pop().destroy();
-      } 
+      }
     } else if (this._scene) {
       this._scene.physics.world.colliders.getActive().forEach(v => {
-        if(v.name === this.id) {
+        if (v.name === this.id) {
           v.destroy();
         }
       });
@@ -165,14 +166,11 @@ class Bubble extends Phaser.Physics.Arcade.Sprite {
   pop(callback?: () => void) {
     if (!this.isPoped) {
       this.anims.play(options.bubble.animation.pop);
-      this._scene.time.addEvent({
-        delay: 200,
-        callbackScope: this,
-        callback: () => {
-          this.blopSFX.play();
-          this.destroy();
-        }
-      });
+
+      this._scene.time.delayedCall(200, () => {
+        this.blopSFX.play();
+        this.destroy();
+      }, null, this);
     }
 
     this.isPoped = true;

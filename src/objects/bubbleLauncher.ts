@@ -161,7 +161,7 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
       // pointer line
       this.graphics.lineStyle(5, 0xffffff);
       this.graphics.strokeLineShape(this.pointerLine);
-      this.graphics.depth = this.depth + 2;
+      this.graphics.depth = this.depth;
 
       // guide lines
       let border: "left" | "right";

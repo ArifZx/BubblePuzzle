@@ -47,16 +47,25 @@ class PuzzleManager extends Phaser.GameObjects.Container {
   tileWidth = 90;
   tileHeight = 90;
 
+  graphics: Phaser.GameObjects.Graphics;
+  borderLineHeight = 0;
+  borderLine: Phaser.Geom.Line;
+
   private _scene: Phaser.Scene;
   private _time: Phaser.Time.Clock;
 
   constructor(scene: Phaser.Scene, x: number, y: number, width?: number, height?: number) {
-
     super(scene, x, y, []);
-    this.width = width || (scene.game.config.width as number);
-    this.height = height || (scene.game.config.height as number);
+    const w = (scene.game.config.width as number);
+    const h = (scene.game.config.height as number);
+    this.width = width || w;
+    this.height = height || h;
     this.tileWidth = this.width / this.columns;
     this.tileHeight = this.tileWidth;
+
+    this.borderLineHeight = h * 0.8 - 1;
+    this.borderLine = new Phaser.Geom.Line(this.x, this.borderLineHeight, this.x + this.width, this.borderLineHeight);
+    this.graphics = scene.add.graphics();
 
     this.bubbles = [];
     this.isSnapping = false;
@@ -66,6 +75,8 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     this._time = scene.time;
     this.setupBoard();
     this.exclusive = true;
+
+    this.redraw();
   }
 
   get game(): Phaser.Game {
@@ -83,6 +94,15 @@ class PuzzleManager extends Phaser.GameObjects.Container {
         this.launchBubble = null;
       }
     }
+  }
+
+  redraw() {
+    this.graphics.clear();
+    this.graphics.setDepth(0);
+    this.graphics.fillStyle(0xffffff);
+    this.borderLine.getPoints(60).forEach(p => {
+      this.graphics.fillRect(p.x - 3, p.y - 3, 6, 6);
+    });
   }
 
   setupBoard(row = 11, column = 8, initRows = 5) {
@@ -171,13 +191,11 @@ class PuzzleManager extends Phaser.GameObjects.Container {
           return acc;
         }, true);
 
-        const isLastRow = rowCol.row >= this.rows - 1;
-
         this.emit(
           "poppedBubbles",
           isPoped,
           neighbors.length >= min ? neighbors : [],
-          isLastRow,
+          this.checkCrossBorderLine(),
           isClear
         );
       });
@@ -216,6 +234,18 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     return null;
   }
 
+  getLowestBubble(): Bubble {
+    for(let row = this.bubbles.length - 1; row >= 0; row--) {
+      for (let column = 0; column < this.bubbles[row].length; column++) {
+        if(this.bubbles[row][column]) {
+          return this.bubbles[row][column];
+        }
+      }
+    }
+
+    return null;
+  }
+ 
   /**
    * Get bubble by RowCol
    * @param rowCol
@@ -630,6 +660,11 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     }
 
     return this.getRowCol(bubble.x, bubble.y);
+  }
+
+  checkCrossBorderLine(): boolean {
+    const lowestBubble = this.getLowestBubble();
+    return lowestBubble && (lowestBubble.y + lowestBubble.height * 0.5) >= this.borderLineHeight;
   }
 
   /**

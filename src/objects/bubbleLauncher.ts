@@ -167,7 +167,7 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
       let border: "left" | "right";
       let reflectedPoint: Phaser.Geom.Point;
       if (this.currentBubble) {
-        this.graphics.defaultFillColor = this.currentBubble.color;
+        this.graphics.fillStyle(this.currentBubble.color);
       }
       const aimPoints = this.aimLine.getPoints(this.guidePointLength);
       for (let i = 0; i < aimPoints.length; i++) {

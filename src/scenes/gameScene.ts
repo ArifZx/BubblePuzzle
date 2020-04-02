@@ -67,7 +67,7 @@ class GameScene extends Phaser.Scene {
       this.scene.restart();
     });
 
-    header.counter.setTime(60);
+    header.counter.setTime(45);
 
     puzzle.generateBubbles();
     this.fpsText = new Phaser.GameObjects.Text(this, 0, (height as number) - 50, "00", {
@@ -120,7 +120,6 @@ class GameScene extends Phaser.Scene {
     });
 
     puzzle.on("snapBubble", (bubble: Bubble) => {
-      // console.log("snap and generate bubble", isLastRow);
       this.time.delayedCall(200, () => launcher.generateBubble());
     });
 
@@ -135,7 +134,7 @@ class GameScene extends Phaser.Scene {
       header.counter.setPaused(true);
     });
 
-    puzzle.on("poppedBubbles", (isPoped: boolean, bubbles: Bubble[], isLastRow: boolean, isClear: boolean) => {
+    puzzle.on("poppedBubbles", (isPoped: boolean, bubbles: Bubble[], isCrossBorderLine: boolean, isClear: boolean) => {
       // console.log("is clear:", isClear);
       // console.log(bubbles);
       // console.log(this.physics.world.colliders.getActive().length);
@@ -150,7 +149,7 @@ class GameScene extends Phaser.Scene {
             header.counter.addTime(bubbles.length * 3);
           });
         }, null, this);
-      } else if (isLastRow) {
+      } else if (isCrossBorderLine) {
         restartPanel.show();
       }
 

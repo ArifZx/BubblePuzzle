@@ -32,7 +32,7 @@ class PreloadScene extends Phaser.Scene {
         start: 0,
         end: 5,
       }),
-      repeat: -1,
+      repeat: 0,
     });
 
     this.scene.start("GameScene");

@@ -61,7 +61,16 @@ class Counter extends Phaser.GameObjects.Container {
     });
   }
 
-  start() {
+  setTime(seconds = 30) {
+    this._initTime = seconds;
+    this.counter = seconds;
+    this.updateText();
+  }
+
+  start(seconds?: number) {
+    if(seconds !== undefined) {
+      this._initTime = seconds;
+    }
     if(!this.isStarted) {
       this.isStarted = true;
       this.init(true);
@@ -80,6 +89,12 @@ class Counter extends Phaser.GameObjects.Container {
   setPaused(pause: boolean) {
     if(this.timerHandler) {
       this.timerHandler.paused = pause;
+    }
+  }
+
+  resume() {
+    if(this.timerHandler) {
+      this.timerHandler.paused = false;
     }
   }
 

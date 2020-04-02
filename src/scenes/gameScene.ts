@@ -40,7 +40,7 @@ class GameScene extends Phaser.Scene {
     const winPanel = new ActionPanel(this, w * 0.5, h * 0.5, "You Win");
     const pauseScreen = new PauseScreen(this);
     const header = new Header(this, 0, 0);
-    let puzzle = new Puzzle(this, 0, 90, w);
+    const puzzle = new Puzzle(this, 0, 45, w);
     const launcher = new BubbleLauncher(this, w * 0.5, h * 0.8, puzzle);
     const cheat = this.input.keyboard.createCombo([
       Phaser.Input.Keyboard.KeyCodes.H,
@@ -55,6 +55,10 @@ class GameScene extends Phaser.Scene {
       resetOnWrongKey: true,
     });
 
+    header.setDepth(3);
+    puzzle.setDepth(2);
+
+
     restartPanel.on("action", () => {
       this.scene.restart();
     });
@@ -63,6 +67,7 @@ class GameScene extends Phaser.Scene {
       this.scene.restart();
     });
 
+    header.counter.setTime(60);
 
     puzzle.generateBubbles();
     this.fpsText = new Phaser.GameObjects.Text(this, 0, (height as number) - 50, "00", {
@@ -170,18 +175,18 @@ class GameScene extends Phaser.Scene {
       this.isPaused = false;
       header.counter.setPaused(false);
       launcher.setPaused(false);
-    })
+    });
 
     const restartKey = this.input.keyboard.addKey("R");
     restartKey.on("up", event => {
       this.scene.restart();
-    }, this)
+    }, this);
 
     const pausedKey = this.input.keyboard.addKey("P");
     pausedKey.on("up", event => {
       this.scene.run((this.isPaused ? "run" : "pause"));
       this.isPaused = !this.isPaused;
-    }, this)
+    }, this);
 
   }
 

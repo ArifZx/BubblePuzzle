@@ -65,6 +65,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     this._scene = scene;
     this._time = scene.time;
     this.setupBoard();
+    this.exclusive = true;
   }
 
   get game(): Phaser.Game {
@@ -149,12 +150,10 @@ class PuzzleManager extends Phaser.GameObjects.Container {
       }
 
       this.launchBubbleRowCol = rowCol;
-      bubble.setRowCol(rowCol.row, rowCol.column);
-      this.bubbles[rowCol.row][rowCol.column] = bubble;
-      bubble.setSnapPosition(this.getCoordinate(rowCol.row, rowCol.column));
       bubble.removeColliders();
+      const newBubble  = this.addBubble(rowCol.row, rowCol.column, bubble);
 
-      const neighbors = this.traceBubble(bubble, sameColor);
+      const neighbors = this.traceBubble(newBubble, sameColor);
       const isPoped = neighbors.length >= min;
       if (isPoped) {
         neighbors.forEach((v, i) => {
@@ -189,7 +188,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
           this.launchBubbleRowCol = null;
           this.isSnapping = false;
 
-          this.emit("snapBubble", bubble);
+          this.emit("snapBubble", newBubble);
         },
         null,
         this
@@ -251,12 +250,12 @@ class PuzzleManager extends Phaser.GameObjects.Container {
           for (let i = 0; i < line.length; i++) {
             try {
 
-              if(line[i].toLowerCase()  === 'x') {
+              if (line[i].toLowerCase() === 'x') {
                 chars.push(-1); // empty slot
               } else {
                 chars.push(parseInt(line[i])); // bubble slot
               }
-              
+
             } catch (error) {
               console.error(`Line[${i}]: '${line[i]}' is not a number`);
             }
@@ -288,12 +287,9 @@ class PuzzleManager extends Phaser.GameObjects.Container {
         this.bubbles.push(Array(puzzleData[_row].length));
         for (let _column = 0; _column < puzzleData[_row].length; _column++) {
           if (_row < this.initRows && puzzleData[_row][_column] >= 0) { // bubble slot
-            const coord = this.getCoordinate(_row, _column);
-            const bubble = new Bubble(this.scene, coord.x, coord.y);
+            const bubble = new Bubble(this.scene, 0, 0);
             bubble.setNumberColor(puzzleData[_row][_column]);
-            bubble.setScale(this.bubbleScale);
-            bubble.setRowCol(_row, _column);
-            this.bubbles[_row][_column] = bubble;
+            this.addBubble(_row, _column, bubble);
           } else { // empty slot
             this.bubbles[_row][_column] = undefined;
           }
@@ -311,15 +307,30 @@ class PuzzleManager extends Phaser.GameObjects.Container {
             const coord = this.getCoordinate(_row, _column);
             const bubble = new Bubble(this.scene, coord.x, coord.y);
             bubble.setRandomColor();
-            bubble.setScale(this.bubbleScale);
-            bubble.setRowCol(_row, _column);
-            this.bubbles[_row][_column] = bubble;
+            this.addBubble(_row, _column, bubble);
           } else {
             this.bubbles[_row][_column] = undefined;
           }
         }
       }
     }
+  }
+
+  addBubble(row: number, column: number, bubble?: Bubble) {
+    const newBubble = bubble || new Bubble(this._scene, -1000, -1000);
+    // if (bubble) {
+    //   newBubble.setColor(bubble.color);
+    //   bubble.destroy();
+    // }
+
+    const coord = this.getCoordinate(row, column);
+    newBubble.setRowCol(row, column);
+    newBubble.setScale(this.bubbleScale);
+    newBubble.setSnapPosition(coord);
+    this.add(newBubble);
+    this.bubbles[row][column] = newBubble;
+
+    return newBubble;
   }
 
   /**
@@ -329,6 +340,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
   removeBubble(bubble: Bubble) {
     if (bubble) {
       const rowCol = this.getBubbleRowCol(bubble);
+      // this.remove(bubble);
       this.bubbles[rowCol.row][rowCol.column] = null;
     }
   }
@@ -572,15 +584,15 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     const ctx = context || this;
     ctx.bubbles.forEach(bubbles => {
       bubbles.forEach(currentBubble => {
-        if(currentBubble) {
-          const collider  = ctx.scene.physics.add.collider(
+        if (currentBubble) {
+          const collider = ctx.scene.physics.add.collider(
             bubble,
             currentBubble,
             callback,
             null,
             this
           );
-          
+
           bubble.addCollider(collider);
         }
       });
@@ -628,8 +640,8 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     const { row, column } = rowCol;
     const baseCheck = row >= 0 && row < this.rows && column >= 0;
     const isLongRow = this.checkLongRow(row);
-    
-    if(isLongRow === undefined) {
+
+    if (isLongRow === undefined) {
       return false;
     }
 
@@ -642,8 +654,8 @@ class PuzzleManager extends Phaser.GameObjects.Container {
 
   checkLongRow(row: number) {
     const isOdd = this.bubbles[row] && this.bubbles[row].length % 2;
-    
-    if(isOdd === undefined) {
+
+    if (isOdd === undefined) {
       return isOdd;
     }
 

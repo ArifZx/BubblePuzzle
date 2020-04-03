@@ -37,7 +37,7 @@ class GameScene extends Phaser.Scene {
   }
 
   init(data): void { 
-    this.scale.startFullscreen();
+    
     const { height, width } = this.game.config;
     const w = width as number;
     const h = height as number;

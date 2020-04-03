@@ -1,6 +1,6 @@
 import "phaser";
 import Bubble from "../objects/bubble";
-import Puzzle from "../objects/puzzleManager";
+import PuzzleManager from "../objects/puzzleManager";
 import BubbleLauncher from "../objects/bubbleLauncher";
 import Header from "../objects/headers";
 import ActionPanel from "../objects/ui/base/actionPanel";
@@ -16,6 +16,17 @@ class GameScene extends Phaser.Scene {
 
   godMode: boolean;
 
+  // Panel
+  restartPanel: ActionPanel;
+  winPanel: ActionPanel;
+  pauseScreen: PauseScreen;
+
+  // Game
+  header: Header;
+  puzzle: PuzzleManager;
+  launcher: BubbleLauncher;
+
+
   constructor() {
     super({
       key: "GameScene"
@@ -25,23 +36,30 @@ class GameScene extends Phaser.Scene {
     this.isPaused = false;
   }
 
-  init(data): void { }
+  init(data): void { 
+    this.scale.startFullscreen();
+    const { height, width } = this.game.config;
+    const w = width as number;
+    const h = height as number;
+
+    this.restartPanel = new ActionPanel(this, w * 0.5, h * 0.5, "Game Over");
+    this.winPanel = new ActionPanel(this, w * 0.5, h * 0.5, "You Win");
+    this.pauseScreen = new PauseScreen(this);
+    this.header = new Header(this, 0, 0);
+    this.puzzle = new PuzzleManager(this, 0, 45, w);
+    this.launcher = new BubbleLauncher(this, w * 0.5, h * 0.8, this.puzzle);
+
+    this.fpsText = new Phaser.GameObjects.Text(this, 0, (height as number) - 50, "00", {
+      color: "#FFFFFF",
+      fontSize: "48px"
+    });
+  }
 
   preload(): void {
     this.cheatSFX = this.sound.add(options.bubble.sfx.blop.name);
   }
 
   create(): void {
-    const { height, width } = this.game.config;
-    const w = width as number;
-    const h = height as number;
-
-    const restartPanel = new ActionPanel(this, w * 0.5, h * 0.5, "Game Over");
-    const winPanel = new ActionPanel(this, w * 0.5, h * 0.5, "You Win");
-    const pauseScreen = new PauseScreen(this);
-    const header = new Header(this, 0, 0);
-    const puzzle = new Puzzle(this, 0, 45, w);
-    const launcher = new BubbleLauncher(this, w * 0.5, h * 0.8, puzzle);
     const cheat = this.input.keyboard.createCombo([
       Phaser.Input.Keyboard.KeyCodes.H,
       Phaser.Input.Keyboard.KeyCodes.E,
@@ -55,25 +73,21 @@ class GameScene extends Phaser.Scene {
       resetOnWrongKey: true,
     });
 
-    header.setDepth(3);
-    puzzle.setDepth(2);
+    this.header.setDepth(3);
+    this.puzzle.setDepth(2);
 
 
-    restartPanel.on("action", () => {
+    this.restartPanel.on("action", () => {
       this.scene.restart();
     });
 
-    winPanel.on("action", () => {
+    this.winPanel.on("action", () => {
       this.scene.restart();
     });
 
-    header.counter.setTime(45);
+    this.header.counter.setTime(45);
 
-    puzzle.generateBubbles();
-    this.fpsText = new Phaser.GameObjects.Text(this, 0, (height as number) - 50, "00", {
-      color: "#FFFFFF",
-      fontSize: "48px"
-    });
+    this.puzzle.generateBubbles();
 
     this.fpsText.setDepth(5);
 
@@ -88,11 +102,11 @@ class GameScene extends Phaser.Scene {
           return;
         }
 
-        const rowCol = puzzle.getRowCol(pointer.x, pointer.y);
-        const bubble = puzzle.getBubbleByRowCol(rowCol);
+        const rowCol = this.puzzle.getRowCol(pointer.x, pointer.y);
+        const bubble = this.puzzle.getBubbleByRowCol(rowCol);
         if (bubble) {
-          puzzle.snapBubble(bubble, null, 1, true);
-          console.log(puzzle.getBubbleRowCol(bubble));
+          this.puzzle.snapBubble(bubble, null, 1, true);
+          console.log(this.puzzle.getBubbleRowCol(bubble));
           console.log(bubble);
         }
       },
@@ -110,70 +124,69 @@ class GameScene extends Phaser.Scene {
 
 
     this.time.delayedCall(1000, () => {
-      launcher.setLaunchInteractive();
-    })
+      this.launcher.setLaunchInteractive();
+    }, null, this);
 
-    launcher.on("launchedBubble", (bubble: Bubble) => {
+    this.launcher.on("launchedBubble", (bubble: Bubble) => {
       // console.log("launch");
-      puzzle.setLaunchBubble(bubble, puzzle);
-      header.counter.start();
+      this.puzzle.setLaunchBubble(bubble);
+      this.header.counter.start();
     });
 
-    puzzle.on("snapBubble", (bubble: Bubble) => {
-      this.time.delayedCall(200, () => launcher.generateBubble());
+    this.puzzle.on("snapBubble", (bubble: Bubble) => {
+      this.time.delayedCall(200, () => this.launcher.generateBubble());
     });
 
-    restartPanel.on("show", () => {
-      console.log("SHOW")
-      launcher.setLaunchInteractive(false);
-      header.counter.setPaused(true);
+    this.restartPanel.on("show", () => {
+      this.launcher.setLaunchInteractive(false);
+      this.header.counter.setPaused(true);
     });
 
-    winPanel.on("show", () => {
-      launcher.setLaunchInteractive(false);
-      header.counter.setPaused(true);
+    this.winPanel.on("show", () => {
+      this.launcher.setLaunchInteractive(false);
+      this.header.counter.setPaused(true);
     });
 
-    puzzle.on("poppedBubbles", (isPoped: boolean, bubbles: Bubble[], isCrossBorderLine: boolean, isClear: boolean) => {
+    this.puzzle.on("poppedBubbles", (isPoped: boolean, bubbles: Bubble[], isCrossBorderLine: boolean, isClear: boolean) => {
       // console.log("is clear:", isClear);
       // console.log(bubbles);
       // console.log(this.physics.world.colliders.getActive().length);
-      header.scoreboard.addScore(bubbles.length * 10);
+      this.header.scoreboard.addScore(bubbles.length * 10);
       if (isPoped) {
-        header.counter.addTime(bubbles.length * 1);
+        this.header.counter.addTime(bubbles.length * 1);
         this.time.delayedCall(bubbles.length * 50, () => {
-          const floatingBubbles = puzzle.dropAllFloatingBubbles();
+          const floatingBubbles = this.puzzle.dropAllFloatingBubbles();
           // console.log(floatingBubbles);
           floatingBubbles.forEach((bubbles, i) => {
-            header.scoreboard.addScore(bubbles.length * 20);
-            header.counter.addTime(bubbles.length * 3);
+            this.header.scoreboard.addScore(bubbles.length * 20);
+            this.header.counter.addTime(bubbles.length * 3);
           });
         }, null, this);
       } else if (isCrossBorderLine) {
-        restartPanel.show();
+        this.restartPanel.show();
       }
 
       if (isClear) {
-        winPanel.show();
+        this.winPanel.show();
       }
     });
 
-    header.counter.on("timesUp", () => {
-      launcher.setLaunchInteractive(false);
-      restartPanel.show();
+    this.header.counter.on("timesUp", () => {
+      this.launcher.setLaunchInteractive(false);
+      this.restartPanel.show();
     });
 
-    header.pausedButton.on("action", () => {
+    this.header.pausedButton.on("action", () => {
       this.isPaused = true;
-      pauseScreen.show();
-      header.counter.setPaused(true);
-      launcher.setPaused(true);
+      this.pauseScreen.show();
+      this.header.counter.setPaused(true);
+      this.launcher.setPaused(true);
     });
 
-    pauseScreen.on("hide", () => {
+    this.pauseScreen.on("hide", () => {
       this.isPaused = false;
-      header.counter.setPaused(false);
-      launcher.setPaused(false);
+      this.header.counter.setPaused(false);
+      this.launcher.setPaused(false);
     });
 
     const restartKey = this.input.keyboard.addKey("R");

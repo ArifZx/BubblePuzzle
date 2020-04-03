@@ -26,6 +26,8 @@ class GameScene extends Phaser.Scene {
   puzzle: PuzzleManager;
   launcher: BubbleLauncher;
 
+  // music
+  music: Phaser.Sound.BaseSound;
 
   constructor() {
     super({
@@ -53,6 +55,9 @@ class GameScene extends Phaser.Scene {
       color: "#FFFFFF",
       fontSize: "48px"
     });
+
+    this.music = this.sound.add(options.music.loop.backsound.name, {loop: true});
+    
   }
 
   preload(): void {
@@ -73,16 +78,30 @@ class GameScene extends Phaser.Scene {
       resetOnWrongKey: true,
     });
 
+    this.music.play();
+
     this.header.setDepth(3);
     this.puzzle.setDepth(2);
 
 
     this.restartPanel.on("action", () => {
+      this.music.stop();
       this.scene.restart();
     });
 
     this.winPanel.on("action", () => {
+      this.music.stop();
       this.scene.restart();
+    });
+
+    this.restartPanel.on("show", () => {
+      this.launcher.setLaunchInteractive(false);
+      this.header.counter.setPaused(true);
+    });
+
+    this.winPanel.on("show", () => {
+      this.launcher.setLaunchInteractive(false);
+      this.header.counter.setPaused(true);
     });
 
     this.header.counter.setTime(45);
@@ -137,15 +156,7 @@ class GameScene extends Phaser.Scene {
       this.time.delayedCall(200, () => this.launcher.generateBubble());
     });
 
-    this.restartPanel.on("show", () => {
-      this.launcher.setLaunchInteractive(false);
-      this.header.counter.setPaused(true);
-    });
-
-    this.winPanel.on("show", () => {
-      this.launcher.setLaunchInteractive(false);
-      this.header.counter.setPaused(true);
-    });
+    this.sound.volume = 1;
 
     this.puzzle.on("poppedBubbles", (isPoped: boolean, bubbles: Bubble[], isCrossBorderLine: boolean, isClear: boolean) => {
       // console.log("is clear:", isClear);
@@ -181,12 +192,14 @@ class GameScene extends Phaser.Scene {
       this.pauseScreen.show();
       this.header.counter.setPaused(true);
       this.launcher.setPaused(true);
+      this.music.pause();
     });
 
     this.pauseScreen.on("hide", () => {
       this.isPaused = false;
       this.header.counter.setPaused(false);
       this.launcher.setPaused(false);
+      this.music.resume();
     });
 
     const restartKey = this.input.keyboard.addKey("R");

@@ -10,7 +10,8 @@ class Counter extends Phaser.GameObjects.Container {
   private _initTime: number;
 
   constructor(scene: Phaser.Scene, x: number, y: number, seconds= 30) {
-    const counterText = scene.add.text(x, y, `${seconds}s`, {
+    const _seconds = Math.min(seconds, 99);
+    const counterText = scene.add.text(x, y, `${_seconds}s`, {
       color: "#FFF",
       fontSize: "64px",
       align: "left"
@@ -18,15 +19,15 @@ class Counter extends Phaser.GameObjects.Container {
 
 
     super(scene, x, y, [counterText]);
-    this._initTime = seconds;
     this._scene = scene;
-    
+    this._initTime = _seconds;
+
     this.isStarted = false;
     this.isTimesUp = false;
     this.counterText = counterText;
     this.counterText.setOrigin(0, 0.5);
-    this.counter = seconds;
-
+    this.counter = _seconds;
+    
     scene.add.existing(this);
   }
 
@@ -62,8 +63,8 @@ class Counter extends Phaser.GameObjects.Container {
   }
 
   setTime(seconds = 30) {
-    this._initTime = seconds;
-    this.counter = seconds;
+    this._initTime = Math.min(seconds, 99);
+    this.counter = this._initTime;
     this.updateText();
   }
 
@@ -82,7 +83,7 @@ class Counter extends Phaser.GameObjects.Container {
       return;
     }
     
-    this.counter += seconds;
+    this.counter = Math.min(this.counter + seconds, 99);
     this.updateText();
   }
 
@@ -99,7 +100,7 @@ class Counter extends Phaser.GameObjects.Container {
   }
 
   updateText() {
-    this.counterText.setText(`${this.counter.toFixed(0)}s`)
+    this.counterText && this.counterText.setText(`${this.counter.toFixed(0)}s`)
   }
 }
 

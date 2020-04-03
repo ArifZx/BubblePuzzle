@@ -33,6 +33,14 @@ const options = {
       }
     }
   },
+  music: {
+    loop: {
+      backsound: {
+        name: "backsound",
+        location: ["assets/audio/music.mp3", "assets/audio/music.ogg"]
+      }
+    }
+  },
   panel: {
     texture: {
       name: "panel",

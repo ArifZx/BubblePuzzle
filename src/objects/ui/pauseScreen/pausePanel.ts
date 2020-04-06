@@ -5,12 +5,14 @@ export default class PausePanel extends Phaser.GameObjects.Container {
   title: Phaser.GameObjects.Text;
   resumeButton: RectButton;
   soundButton: RectButton;
+  isMuted: boolean;
 
   private _scene: Phaser.Scene;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y);
     this._scene = scene;
+    this.isMuted = scene.sound.volume <= 0;
 
     this.panel = new Phaser.GameObjects.Rectangle(
       scene,
@@ -44,7 +46,9 @@ export default class PausePanel extends Phaser.GameObjects.Container {
     });
 
     this.soundButton.on("action", () => {
-      this._scene.sound.volume = this._scene.sound.volume > 0 ? 0 : 1;
+      const isHasSound = this._scene.sound.volume > 0;
+      this._scene.sound.volume = isHasSound ? 0 : 1;
+      this.isMuted = isHasSound;
       this.updateText();
     });
 
@@ -57,10 +61,7 @@ export default class PausePanel extends Phaser.GameObjects.Container {
   }
 
   updateText() {
-    this._scene.time.delayedCall(150, () => {
-      const isHasSound = this._scene.sound.volume > 0;
-      this.soundButton.text.setText(`Sound: ${isHasSound ? "On" : "Off"}`);
-      this.soundButton.text.setTint(isHasSound ? 0xffffff : 0xff0000);
-    });
+    this.soundButton.text.setText(`Sound: ${!this.isMuted ? "On" : "Off"}`);
+    this.soundButton.text.setTint(!this.isMuted ? 0xffffff : 0xff0000);
   }
 }

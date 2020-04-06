@@ -104,7 +104,7 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
     if(this.isInteractive) {
 
       const pointer = this._scene.input.activePointer;
-      if(this._afterPaused && !pointer.isDown) {
+      if(!this.isPaused && this._afterPaused && !pointer.isDown) {
         this._afterPaused = false;
       }
 

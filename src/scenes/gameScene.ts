@@ -192,14 +192,12 @@ class GameScene extends Phaser.Scene {
       this.pauseScreen.show();
       this.header.counter.setPaused(true);
       this.launcher.setPaused(true);
-      this.music.pause();
     });
 
     this.pauseScreen.on("hide", () => {
       this.isPaused = false;
       this.header.counter.setPaused(false);
       this.launcher.setPaused(false);
-      this.music.resume();
     });
 
     const restartKey = this.input.keyboard.addKey("R");

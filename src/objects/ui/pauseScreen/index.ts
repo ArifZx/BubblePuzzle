@@ -1,6 +1,11 @@
+import RectButton from "../base/rectButton";
+import PausePanel from "./pausePanel";
+
 class PauseScreen extends Phaser.GameObjects.Container {
 
   pauseText: Phaser.GameObjects.Text;
+  resumeButton: RectButton;
+  panel: PausePanel;
 
   constructor(scene: Phaser.Scene, isShow = false) {
     const {width, height} = scene.game.config;
@@ -9,21 +14,17 @@ class PauseScreen extends Phaser.GameObjects.Container {
 
     const rect = new Phaser.GameObjects.Rectangle(scene, 0, 0, w, h, 0x000, 0.5);
     rect.setOrigin(0);
-
-    const text  = new Phaser.GameObjects.Text(scene, w * 0.5, h * 0.5, "Paused", {
-      fontSize: "64px"
-    });
-    text.setOrigin(0.5);
     
-
-    super(scene, 0, 0, [rect, text]);
+    super(scene, 0, 0, [rect]);
     this.setDepth(1000);
     this.width = w;
     this.height = h;
 
-    rect.setInteractive().on("pointerdown", () => {
-      this.hide();
-    });
+    this.panel = new PausePanel(scene, w * 0.5, h * 0.5 - 200);
+    this.add(this.panel);
+
+    this.panel.on("resume", () => this.hide());
+    rect.setInteractive().on("pointerdown", ()=>{})
 
     if(isShow) {
       this.show();

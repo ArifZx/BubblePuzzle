@@ -41,6 +41,7 @@ class PauseScreen extends Phaser.GameObjects.Container {
   }
 
   show() {
+    this.panel && this.panel.updateText();
     this.setPosition(0, 0);
     this.emit("show");
   }

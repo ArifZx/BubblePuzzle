@@ -636,13 +636,13 @@ class PuzzleManager extends Phaser.GameObjects.Container {
    */
   getCoordinate(row: number, column: number): Phaser.Math.Vector2 {
     let temp = new Phaser.Math.Vector2();
-    temp.x = (column + 1) * this.tileWidth - this.tileWidth * 0.5 + this.x;
+    temp.x = (column + 1) * this.tileWidth - this.tileWidth * 0.5;
 
     if (this.checkLongRow(row)) {
       temp.x += this.tileWidth * 0.5;
     }
 
-    temp.y = (row + 1) * this.tileHeight - this.tileHeight * 0.5 + this.y;
+    temp.y = (row + 1) * this.tileHeight - this.tileHeight * 0.5;
     return temp;
   }
 

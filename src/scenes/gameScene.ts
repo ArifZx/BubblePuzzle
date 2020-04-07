@@ -48,7 +48,7 @@ class GameScene extends Phaser.Scene {
     this.winPanel = new ActionPanel(this, w * 0.5, h * 0.5, "You Win");
     this.pauseScreen = new PauseScreen(this);
     this.header = new Header(this, 0, 0);
-    this.puzzle = new PuzzleManager(this, 0, 45, w);
+    this.puzzle = new PuzzleManager(this, 0, 90, w);
     this.launcher = new BubbleLauncher(this, w * 0.5, h * 0.8, this.puzzle);
 
     this.fpsText = new Phaser.GameObjects.Text(this, 0, (height as number) - 50, "00", {

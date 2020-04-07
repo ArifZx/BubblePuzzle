@@ -1,6 +1,7 @@
 import "phaser"
 import PreloadScene from "./scenes/preloadScene";
 import GameScene from "./scenes/gameScene";
+import MenuScene from "./scenes/menuScene";
 
 const config: Phaser.Types.Core.GameConfig = {
   title: "Puzzle Bubble",
@@ -19,7 +20,7 @@ const config: Phaser.Types.Core.GameConfig = {
     }
   },
   backgroundColor: "#6A4775",
-  scene: [PreloadScene, GameScene],
+  scene: [PreloadScene, MenuScene, GameScene],
 }
 
 let game: Phaser.Game;

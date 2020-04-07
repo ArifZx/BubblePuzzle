@@ -1,5 +1,5 @@
 import RectButton from "../base/rectButton";
-import PausePanel from "./pausePanel";
+import PausePanel from "../panel/pausePanel";
 
 class PauseScreen extends Phaser.GameObjects.Container {
 

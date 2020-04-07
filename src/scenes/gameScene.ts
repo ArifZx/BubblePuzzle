@@ -5,7 +5,7 @@ import BubbleLauncher from "../objects/bubbleLauncher";
 import Header from "../objects/headers";
 import ActionPanel from "../objects/ui/base/actionPanel";
 import options from "../options";
-import PauseScreen from "../objects/ui/pauseScreen";
+import PauseScreen from "../objects/ui/screen/pauseScreen";
 
 class GameScene extends Phaser.Scene {
 

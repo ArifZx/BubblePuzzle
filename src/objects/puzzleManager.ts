@@ -664,7 +664,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
 
   checkCrossBorderLine(): boolean {
     const lowestBubble = this.getLowestBubble();
-    return lowestBubble && (lowestBubble.y + lowestBubble.height * 0.5) >= this.borderLineHeight;
+    return lowestBubble && (lowestBubble.y + lowestBubble.height) >= this.borderLineHeight;
   }
 
   /**

@@ -1,5 +1,6 @@
 import { Scene } from "phaser";
 import options from "../options";
+import LoadingProgress from "../objects/ui/loadingProgress";
 
 class PreloadScene extends Scene {
   constructor() {
@@ -9,6 +10,12 @@ class PreloadScene extends Scene {
   }
 
   preload(): void {
+    const config = this.game.config;
+    const w = config.width as number;
+    const h = config.height as number;
+
+    const progress = new LoadingProgress(this, w * 0.5 - 200, h * 0.5 - 50);
+
     this.load.spritesheet(options.bubble.texture.name, options.bubble.texture.location, {
       frameWidth: options.bubble.texture.height,
       frameHeight: options.bubble.texture.height,
@@ -27,6 +34,7 @@ class PreloadScene extends Scene {
   }
 
   create(): void {
+
     this.anims.create({
       key: options.bubble.animation.pop,
       frames: this.anims.generateFrameNumbers(options.bubble.texture.name, {

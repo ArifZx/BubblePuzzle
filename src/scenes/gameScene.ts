@@ -58,6 +58,16 @@ class GameScene extends Scene {
 
     this.music = this.sound.add(options.music.loop.backsound.name, { loop: true });
 
+    this.time.addEvent({
+      repeat: -1,
+      delay: 100,
+      callbackScope: this,
+      callback: () => {
+        if (this.godMode) {
+          this.launcher && this.launcher.setLaunchInteractive(false);
+        }
+      }
+    })
   }
 
   preload(): void {
@@ -135,6 +145,7 @@ class GameScene extends Scene {
     // assume only one cheat
     this.input.keyboard.on("keycombomatch", () => {
       this.godMode = !this.godMode;
+      this.launcher.setLaunchInteractive(!this.godMode);
       this.cheatSFX.play({
         volume: this.godMode ? 1 : 0.5,
       });

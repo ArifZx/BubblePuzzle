@@ -551,7 +551,7 @@ class PuzzleManager extends GameObjects.Container {
 
   // Floating Bubble
   isBaseBubble(bubble: Bubble): boolean {
-    return !(bubble && bubble.y > this.tileHeight * 0.5 + this.y);
+    return !(bubble && bubble.y > this.tileHeight * 0.5 - 1 + this.y);
   }
 
   /**

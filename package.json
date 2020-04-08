@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "webpack",
-    "watch": "./node_modules/.bin/webpack --watch",
+    "build": "webpack --mode=production",
+    "watch": "./node_modules/.bin/webpack --watch --mode=development",
     "serve": "./node_modules/.bin/live-server --port=8085 --host=0.0.0.0"
   },
   "repository": {
@@ -22,6 +22,7 @@
   "devDependencies": {
     "live-server": "^1.2.1",
     "phaser": "^3.22.0",
+    "terser-webpack-plugin": "^2.3.5",
     "ts-loader": "^6.2.1",
     "typescript": "^3.8.3",
     "webpack": "^4.42.0",

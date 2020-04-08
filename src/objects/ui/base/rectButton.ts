@@ -1,13 +1,15 @@
-class RectButton extends Phaser.GameObjects.Container {
-  text: Phaser.GameObjects.Text;
-  style: Phaser.Types.GameObjects.Text.TextStyle;
-  rect: Phaser.GameObjects.Rectangle;
+import { Scene, GameObjects, Types } from "phaser"
+
+class RectButton extends GameObjects.Container {
+  text: GameObjects.Text;
+  style: Types.GameObjects.Text.TextStyle;
+  rect: GameObjects.Rectangle;
 
   hoverScale: number;
   protected _initScale = 1;
 
   constructor(
-    scene: Phaser.Scene,
+    scene: Scene,
     x: number,
     y: number,
     options?: {
@@ -15,8 +17,8 @@ class RectButton extends Phaser.GameObjects.Container {
       height?: number;
       paddingWidth?: number;
       paddingHeight?: number;
-      text?: string | Phaser.GameObjects.Text;
-      style?: Phaser.Types.GameObjects.Text.TextStyle;
+      text?: string | GameObjects.Text;
+      style?: Types.GameObjects.Text.TextStyle;
       color?: number;
       alpha?: number;
       hoverScale?: number;
@@ -40,7 +42,7 @@ class RectButton extends Phaser.GameObjects.Container {
     if (typeof text === "object" && !(text instanceof Array)) {
       this.text = text;
     } else {
-      this.text = new Phaser.GameObjects.Text(
+      this.text = new GameObjects.Text(
         scene,
         x,
         y,
@@ -56,7 +58,7 @@ class RectButton extends Phaser.GameObjects.Container {
       (height ? height : this.text.height) +
       (paddingHeight !== undefined ? paddingHeight : 8);
 
-    this.rect = new Phaser.GameObjects.Rectangle(
+    this.rect = new GameObjects.Rectangle(
       scene,
       0,
       0,

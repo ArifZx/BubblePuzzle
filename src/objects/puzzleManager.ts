@@ -1,3 +1,4 @@
+import { Math as PhaserMath, GameObjects, Scene, Geom, Time, Core, Game } from "phaser"
 import Bubble from "./bubble";
 
 export type RowCol = {
@@ -12,7 +13,7 @@ export type PuzzleConfig = {
   data?: string;
 };
 
-class PuzzleManager extends Phaser.GameObjects.Container {
+class PuzzleManager extends GameObjects.Container {
   bubbles: Array<Array<Bubble>>;
   launchBubble: Bubble;
   launchBubbleRowCol: RowCol;
@@ -47,14 +48,14 @@ class PuzzleManager extends Phaser.GameObjects.Container {
   tileWidth = 90;
   tileHeight = 90;
 
-  graphics: Phaser.GameObjects.Graphics;
+  graphics: GameObjects.Graphics;
   borderLineHeight = 0;
-  borderLine: Phaser.Geom.Line;
+  borderLine: Geom.Line;
 
-  private _scene: Phaser.Scene;
-  private _time: Phaser.Time.Clock;
+  private _scene: Scene;
+  private _time: Time.Clock;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, width?: number, height?: number) {
+  constructor(scene: Scene, x: number, y: number, width?: number, height?: number) {
     super(scene, x, y, []);
     const w = (scene.game.config.width as number);
     const h = (scene.game.config.height as number);
@@ -64,7 +65,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     this.tileHeight = this.tileWidth;
 
     this.borderLineHeight = h * 0.8 - 1;
-    this.borderLine = new Phaser.Geom.Line(this.x, this.borderLineHeight, this.x + this.width, this.borderLineHeight);
+    this.borderLine = new Geom.Line(this.x, this.borderLineHeight, this.x + this.width, this.borderLineHeight);
     this.graphics = scene.add.graphics();
 
     this.bubbles = [];
@@ -79,11 +80,11 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     this.redraw();
   }
 
-  get game(): Phaser.Game {
+  get game(): Game {
     return this._scene && this._scene.game;
   }
 
-  get gameConfig(): Phaser.Core.Config {
+  get gameConfig(): Core.Config {
     return this.game && this.game.config;
   }
 
@@ -171,7 +172,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
 
       this.launchBubbleRowCol = rowCol;
       bubble.removeColliders();
-      const newBubble  = this.addBubble(rowCol.row, rowCol.column, bubble);
+      const newBubble = this.addBubble(rowCol.row, rowCol.column, bubble);
 
       const neighbors = this.traceBubble(newBubble, sameColor);
       const isPoped = neighbors.length >= min;
@@ -235,9 +236,9 @@ class PuzzleManager extends Phaser.GameObjects.Container {
   }
 
   getLowestBubble(): Bubble {
-    for(let row = this.bubbles.length - 1; row >= 0; row--) {
+    for (let row = this.bubbles.length - 1; row >= 0; row--) {
       for (let column = 0; column < this.bubbles[row].length; column++) {
-        if(this.bubbles[row][column]) {
+        if (this.bubbles[row][column]) {
           return this.bubbles[row][column];
         }
       }
@@ -245,7 +246,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
 
     return null;
   }
- 
+
   /**
    * Get bubble by RowCol
    * @param rowCol
@@ -472,7 +473,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
         !this.bubbles[nRowCol.row][nRowCol.column]
       ) {
         const nPos = this.getCoordinate(nRowCol.row, nRowCol.column);
-        const distance = new Phaser.Math.Vector2(
+        const distance = new PhaserMath.Vector2(
           nPos.x - x,
           nPos.y - y
         ).length();
@@ -634,8 +635,8 @@ class PuzzleManager extends Phaser.GameObjects.Container {
    * @param row
    * @param column
    */
-  getCoordinate(row: number, column: number): Phaser.Math.Vector2 {
-    let temp = new Phaser.Math.Vector2();
+  getCoordinate(row: number, column: number): PhaserMath.Vector2 {
+    let temp = new PhaserMath.Vector2();
     temp.x = (column + 1) * this.tileWidth - this.tileWidth * 0.5;
 
     if (this.checkLongRow(row)) {

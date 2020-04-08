@@ -1,4 +1,4 @@
-import "phaser";
+import { Scene, GameObjects, Sound, Input } from "phaser";
 import Bubble from "../objects/bubble";
 import PuzzleManager from "../objects/puzzleManager";
 import BubbleLauncher from "../objects/bubbleLauncher";
@@ -7,11 +7,11 @@ import ActionPanel from "../objects/ui/base/actionPanel";
 import options from "../options";
 import PauseScreen from "../objects/ui/screen/pauseScreen";
 
-class GameScene extends Phaser.Scene {
+class GameScene extends Scene {
 
   bubble: Bubble;
-  fpsText: Phaser.GameObjects.Text;
-  cheatSFX: Phaser.Sound.BaseSound;
+  fpsText: GameObjects.Text;
+  cheatSFX: Sound.BaseSound;
   isPaused: boolean;
 
   godMode: boolean;
@@ -27,7 +27,7 @@ class GameScene extends Phaser.Scene {
   launcher: BubbleLauncher;
 
   // music
-  music: Phaser.Sound.BaseSound;
+  music: Sound.BaseSound;
 
   constructor() {
     super({
@@ -38,8 +38,8 @@ class GameScene extends Phaser.Scene {
     this.isPaused = false;
   }
 
-  init(data): void { 
-    
+  init(data): void {
+
     const { height, width } = this.game.config;
     const w = width as number;
     const h = height as number;
@@ -51,13 +51,13 @@ class GameScene extends Phaser.Scene {
     this.puzzle = new PuzzleManager(this, 0, 90, w);
     this.launcher = new BubbleLauncher(this, w * 0.5, h * 0.8, this.puzzle);
 
-    this.fpsText = new Phaser.GameObjects.Text(this, 0, (height as number) - 50, "00", {
+    this.fpsText = new GameObjects.Text(this, 0, (height as number) - 50, "00", {
       color: "#FFFFFF",
       fontSize: "48px"
     });
 
-    this.music = this.sound.add(options.music.loop.backsound.name, {loop: true});
-    
+    this.music = this.sound.add(options.music.loop.backsound.name, { loop: true });
+
   }
 
   preload(): void {
@@ -66,13 +66,13 @@ class GameScene extends Phaser.Scene {
 
   create(): void {
     const cheat = this.input.keyboard.createCombo([
-      Phaser.Input.Keyboard.KeyCodes.H,
-      Phaser.Input.Keyboard.KeyCodes.E,
-      Phaser.Input.Keyboard.KeyCodes.S,
-      Phaser.Input.Keyboard.KeyCodes.O,
-      Phaser.Input.Keyboard.KeyCodes.Y,
-      Phaser.Input.Keyboard.KeyCodes.A,
-      Phaser.Input.Keyboard.KeyCodes.M,
+      Input.Keyboard.KeyCodes.H,
+      Input.Keyboard.KeyCodes.E,
+      Input.Keyboard.KeyCodes.S,
+      Input.Keyboard.KeyCodes.O,
+      Input.Keyboard.KeyCodes.Y,
+      Input.Keyboard.KeyCodes.A,
+      Input.Keyboard.KeyCodes.M,
     ], {
       resetOnMatch: true,
       resetOnWrongKey: true,

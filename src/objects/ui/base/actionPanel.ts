@@ -1,18 +1,19 @@
+import { Scene, GameObjects, Math as PhaserMath } from "phaser"
 import options from "../../../options";
 
-class ActionPanel extends Phaser.GameObjects.Container {
+class ActionPanel extends GameObjects.Container {
 
-  panelText: Phaser.GameObjects.Text;
-  button: Phaser.GameObjects.Sprite;
-  panel: Phaser.GameObjects.Sprite;
-  initalPosition: Phaser.Math.Vector2;
-  container: Phaser.GameObjects.Container;
+  panelText: GameObjects.Text;
+  button: GameObjects.Sprite;
+  panel: GameObjects.Sprite;
+  initalPosition: PhaserMath.Vector2;
+  container: GameObjects.Container;
 
-  private _scene: Phaser.Scene;
+  private _scene: Scene;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, text: string, isShow = false) {
+  constructor(scene: Scene, x: number, y: number, text: string, isShow = false) {
     super(scene, x, y);
-    this.initalPosition = new Phaser.Math.Vector2(x, y);
+    this.initalPosition = new PhaserMath.Vector2(x, y);
     this._scene = scene;
     this.setDepth(10);
 

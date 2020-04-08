@@ -1,7 +1,7 @@
-import "phaser";
+import { Scene } from "phaser";
 import options from "../options";
 
-class PreloadScene extends Phaser.Scene {
+class PreloadScene extends Scene {
   constructor() {
     super({
       key: "PreloadScene"

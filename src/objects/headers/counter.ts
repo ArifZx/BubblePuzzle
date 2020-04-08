@@ -1,15 +1,17 @@
-class Counter extends Phaser.GameObjects.Container {
+import { GameObjects, Time, Scene } from "phaser"
+
+class Counter extends GameObjects.Container {
   counter: number;
-  counterText: Phaser.GameObjects.Text;
-  timerHandler: Phaser.Time.TimerEvent;
+  counterText: GameObjects.Text;
+  timerHandler: Time.TimerEvent;
   callbackFunc: () => void;
   isTimesUp: boolean;
   isStarted: boolean;
 
-  private _scene: Phaser.Scene;
+  private _scene: Scene;
   private _initTime: number;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, seconds= 30) {
+  constructor(scene: Scene, x: number, y: number, seconds = 30) {
     const _seconds = Math.min(seconds, 99);
     const counterText = scene.add.text(x, y, `${_seconds}s`, {
       color: "#FFF",
@@ -27,7 +29,7 @@ class Counter extends Phaser.GameObjects.Container {
     this.counterText = counterText;
     this.counterText.setOrigin(0, 0.5);
     this.counter = _seconds;
-    
+
     scene.add.existing(this);
   }
 
@@ -41,16 +43,16 @@ class Counter extends Phaser.GameObjects.Container {
       this.counter = Math.max(0, this.counter - 1);
       this.updateText();
 
-      if(!this.isTimesUp && this.counter === 0) {
+      if (!this.isTimesUp && this.counter === 0) {
         this.emit("timesUp", this);
-        if(this.timerHandler) {
+        if (this.timerHandler) {
           this.timerHandler.remove();
         }
       }
     }
 
     this.counter = this._initTime;
-    if(this.timerHandler) {
+    if (this.timerHandler) {
       this.timerHandler.remove();
     }
 
@@ -69,32 +71,32 @@ class Counter extends Phaser.GameObjects.Container {
   }
 
   start(seconds?: number) {
-    if(seconds !== undefined) {
+    if (seconds !== undefined) {
       this._initTime = seconds;
     }
-    if(!this.isStarted) {
+    if (!this.isStarted) {
       this.isStarted = true;
       this.init(true);
     }
   }
 
   addTime(seconds = 0) {
-    if(this.isTimesUp) {
+    if (this.isTimesUp) {
       return;
     }
-    
+
     this.counter = Math.min(this.counter + seconds, 99);
     this.updateText();
   }
 
   setPaused(pause: boolean) {
-    if(this.timerHandler) {
+    if (this.timerHandler) {
       this.timerHandler.paused = pause;
     }
   }
 
   resume() {
-    if(this.timerHandler) {
+    if (this.timerHandler) {
       this.timerHandler.paused = false;
     }
   }

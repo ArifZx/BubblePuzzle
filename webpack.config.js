@@ -1,22 +1,24 @@
-const path = require('path');
+const path = require("path");
+const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = {
-    entry: './src/app.ts',
-    module: {
-        rules: [
-            {
-                test: /\.tsx?$/,
-                use: 'ts-loader',
-                exclude: /node_modules/
-            }
-        ]
-    },
-    resolve: {
-        extensions: ['.ts', '.tsx', '.js']
-    },
-    output: {
-        filename: 'app.js',
-        path: path.resolve(__dirname, 'dist')
-    },
-    mode: 'development'
+  entry: "./src/app.ts",
+  module: {
+    rules: [
+      {
+        test: /\.(tsx|ts)?$/,
+        use: "ts-loader",
+        exclude: /node_modules/,
+      },
+    ],
+  },
+  resolve: {
+    extensions: [".ts", ".tsx", ".js"],
+  },
+  output: {
+    filename: "app.js",
+    path: path.resolve(__dirname, "dist"),
+  },
+  mode: "production",
+  plugins: [new TerserPlugin()],
 };

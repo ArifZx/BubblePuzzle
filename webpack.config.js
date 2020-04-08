@@ -1,6 +1,9 @@
-const path = require("path");
+"use strict";
+
+const webpack = require("webpack");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
+const path = require("path");
 
 module.exports = {
   entry: "./src/app.ts",
@@ -22,7 +25,17 @@ module.exports = {
     path: path.resolve(__dirname, "dist"),
   },
   mode: "production",
-  plugins: [new CleanWebpackPlugin(), new TerserPlugin()],
+  plugins: [
+    new webpack.DefinePlugin({
+      "typeof CANVAS_RENDERER": JSON.stringify(true),
+      "typeof WEBGL_RENDERER": JSON.stringify(true),
+      "typeof EXPERIMENTAL": JSON.stringify(false),
+      "typeof PLUGIN_CAMERA3D": JSON.stringify(false),
+      "typeof PLUGIN_FBINSTANT": JSON.stringify(false),
+    }),
+    new CleanWebpackPlugin(),
+    new TerserPlugin(),
+  ],
   optimization: {
     minimizer: [
       new TerserPlugin({

@@ -442,7 +442,7 @@ class PuzzleManager extends GameObjects.Container {
     let minDistance = Number.MAX_VALUE;
     const { row, column } = this.getBubbleRowCol(neighbor);
 
-    const offsets = [];
+    const offsets: Array<Array<number>> = [];
     const touch = neighbor.body.touching;
     this.neighborsOffsets[this.checkLongRow(row)].forEach(offset => {
       if (touch.up && offset[1] < 0) {
@@ -558,7 +558,7 @@ class PuzzleManager extends GameObjects.Container {
    * Get all floating bubbles
    */
   getAllFloatingBubble(): Array<Array<Bubble>> {
-    const floatingBubbles = [];
+    const floatingBubbles: Array<Array<Bubble>> = [];
     const processedSign: { [id: string]: boolean } = {};
 
     this.bubbles.forEach((bubbles, i) => {

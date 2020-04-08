@@ -38,7 +38,7 @@ class GameScene extends Scene {
     this.isPaused = false;
   }
 
-  init(data): void {
+  init(data: any): void {
 
     const { height, width } = this.game.config;
     const w = width as number;
@@ -115,7 +115,7 @@ class GameScene extends Scene {
     // FOR DEBUG
     this.input.on(
       "pointerdown",
-      pointer => {
+      (pointer: Input.Pointer) => {
 
         if (!this.godMode) {
           return;
@@ -133,7 +133,7 @@ class GameScene extends Scene {
     );
 
     // assume only one cheat
-    this.input.keyboard.on("keycombomatch", (combo, event) => {
+    this.input.keyboard.on("keycombomatch", () => {
       this.godMode = !this.godMode;
       this.cheatSFX.play({
         volume: this.godMode ? 1 : 0.5,
@@ -201,12 +201,12 @@ class GameScene extends Scene {
     });
 
     const restartKey = this.input.keyboard.addKey("R");
-    restartKey.on("up", event => {
+    restartKey.on("up", () => {
       this.scene.restart();
     }, this);
 
     const pausedKey = this.input.keyboard.addKey("P");
-    pausedKey.on("up", event => {
+    pausedKey.on("up", () => {
       this.scene.run((this.isPaused ? "run" : "pause"));
       this.isPaused = !this.isPaused;
     }, this);

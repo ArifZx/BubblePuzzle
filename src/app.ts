@@ -44,7 +44,7 @@ function startGame() {
     game = new BubblePuzzleGame(config);
   }
 
-  window["game"] = game;
+  // window["game"] = game;
 }
 
 

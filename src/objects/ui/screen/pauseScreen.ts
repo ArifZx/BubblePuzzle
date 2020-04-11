@@ -1,19 +1,18 @@
-import { GameObjects, Scene } from "phaser"
 import RectButton from "../base/rectButton";
 import PausePanel from "../panel/pausePanel";
 
-class PauseScreen extends GameObjects.Container {
+class PauseScreen extends Phaser.GameObjects.Container {
 
-  pauseText: GameObjects.Text;
+  pauseText: Phaser.GameObjects.Text;
   resumeButton: RectButton;
   panel: PausePanel;
 
-  constructor(scene: Scene, isShow = false) {
+  constructor(scene: Phaser.Scene, isShow = false) {
     const { width, height } = scene.game.config;
     const w = width as number;
     const h = height as number;
 
-    const rect = new GameObjects.Rectangle(scene, 0, 0, w, h, 0x000, 0.5);
+    const rect = new Phaser.GameObjects.Rectangle(scene, 0, 0, w, h, 0x000, 0.5);
     rect.setOrigin(0);
 
     super(scene, 0, 0, [rect]);

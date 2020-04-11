@@ -8,6 +8,12 @@ const path = require("path");
 module.exports = {
   entry: "./src/app.ts",
   devtool: "source-map",
+  externals: {
+    phaser: {
+      root: "phaser",
+      commonjs2: "phaser",
+    },
+  },
   module: {
     rules: [
       {

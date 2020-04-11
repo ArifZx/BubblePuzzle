@@ -1,12 +1,11 @@
-import { Scene, GameObjects } from "phaser"
-import options from "../../../options";
 
-class ActionButton extends GameObjects.Image {
+
+class ActionButton extends Phaser.GameObjects.Image {
 
   hoverScale: number;
   protected _initScale = 1;
 
-  constructor(scene: Scene, x: number, y: number, texture: string, hoverScale = 1.5, frame?: string | number) {
+  constructor(scene: Phaser.Scene, x: number, y: number, texture: string, hoverScale = 1.5, frame?: string | number) {
     super(scene, x, y, texture, frame);
     this.hoverScale = hoverScale;
     this.setOrigin(0.5);

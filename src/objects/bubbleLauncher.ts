@@ -1,28 +1,27 @@
-import { Math as PhaserMath, Scene, GameObjects, Geom, Sound, Input } from "phaser"
 import options from "../options";
 import Bubble from "./bubble";
 import Puzzle from "./puzzleManager";
 
-class BubbleLauncher extends GameObjects.Container {
-  touchPosition: PhaserMath.Vector2;
+class BubbleLauncher extends Phaser.GameObjects.Container {
+  touchPosition: Phaser.Math.Vector2;
   isTracing: boolean;
   isFlip: boolean;
   isInteractive: boolean;
-  arrow: GameObjects.Sprite;
+  arrow: Phaser.GameObjects.Sprite;
 
   angle: number;
   guidePointLength: number;
   aimLength: number;
-  borderLineLeft: Geom.Line;
-  borderLineRight: Geom.Line;
+  borderLineLeft: Phaser.Geom.Line;
+  borderLineRight: Phaser.Geom.Line;
   leftBorder: number;
   rightBorder: number;
-  reflectedLine: Geom.Line;
-  aimLine: Geom.Line;
-  pointerLine: Geom.Line;
-  graphics: GameObjects.Graphics;
+  reflectedLine: Phaser.Geom.Line;
+  aimLine: Phaser.Geom.Line;
+  pointerLine: Phaser.Geom.Line;
+  graphics: Phaser.GameObjects.Graphics;
 
-  rectPad: GameObjects.Rectangle;
+  rectPad: Phaser.GameObjects.Rectangle;
 
   launchSpeed: number;
   pointerLength: number;
@@ -32,17 +31,17 @@ class BubbleLauncher extends GameObjects.Container {
   nextBubble: Bubble;
   colorOrder: number[];
 
-  splatSFX: Sound.BaseSound;
+  splatSFX: Phaser.Sound.BaseSound;
   isPaused: boolean;
 
-  private _scene: Scene;
+  private _scene: Phaser.Scene;
   private _counter: number;
   private _prevX: number;
   private _prevY: number;
   private _bubbleWidth: number;
   private _afterPaused: boolean;
 
-  constructor(scene: Scene, x: number, y: number, puzzle: Puzzle, colorOrder?: number[]) {
+  constructor(scene: Phaser.Scene, x: number, y: number, puzzle: Puzzle, colorOrder?: number[]) {
     const { width, height } = scene.game.config;
 
     // super(scene, x, y, width as number, 0.25 * (height as number), 0x7f6388);
@@ -52,7 +51,7 @@ class BubbleLauncher extends GameObjects.Container {
     this._scene = scene;
     this._counter = 0;
 
-    this.rectPad = new GameObjects.Rectangle(scene, x, y, this.width, this.height, 0x7f6388);
+    this.rectPad = new Phaser.GameObjects.Rectangle(scene, x, y, this.width, this.height, 0x7f6388);
     this.rectPad.setOrigin(0.5, 0);
     this.list.push(this.rectPad);
 
@@ -75,12 +74,12 @@ class BubbleLauncher extends GameObjects.Container {
 
     this.guidePointLength = 100;
     this.graphics = this._scene.add.graphics();
-    this.pointerLine = new Geom.Line();
-    this.aimLine = new Geom.Line();
+    this.pointerLine = new Phaser.Geom.Line();
+    this.aimLine = new Phaser.Geom.Line();
     this.aimLength = this.y;
-    this.reflectedLine = new Geom.Line();
-    this.borderLineLeft = new Geom.Line(0, 0, 0, height as number);
-    this.borderLineRight = new Geom.Line(
+    this.reflectedLine = new Phaser.Geom.Line();
+    this.borderLineLeft = new Phaser.Geom.Line(0, 0, 0, height as number);
+    this.borderLineRight = new Phaser.Geom.Line(
       width as number,
       0,
       width as number,
@@ -166,7 +165,7 @@ class BubbleLauncher extends GameObjects.Container {
 
       // guide lines
       let border: "left" | "right";
-      let reflectedPoint: Geom.Point;
+      let reflectedPoint: Phaser.Geom.Point;
       if (this.currentBubble) {
         this.graphics.fillStyle(this.currentBubble.color);
       }
@@ -195,11 +194,11 @@ class BubbleLauncher extends GameObjects.Container {
       }
 
       if (border && reflectedPoint) {
-        const reflecctedAngle = Geom.Line.ReflectAngle(
+        const reflecctedAngle = Phaser.Geom.Line.ReflectAngle(
           this.aimLine,
           border === "left" ? this.borderLineLeft : this.borderLineRight
         );
-        Geom.Line.SetToAngle(
+        Phaser.Geom.Line.SetToAngle(
           this.reflectedLine,
           reflectedPoint.x,
           reflectedPoint.y,
@@ -291,12 +290,12 @@ class BubbleLauncher extends GameObjects.Container {
     this.arrow && this.arrow.setAlpha(0);
   }
 
-  launch(endPosition: PhaserMath.Vector2) {
+  launch(endPosition: Phaser.Math.Vector2) {
     this.isTracing = false;
 
     if (this.currentBubble) {
       this.splatSFX.play();
-      const direction = new PhaserMath.Vector2(
+      const direction = new Phaser.Math.Vector2(
         endPosition.x - this.x,
         endPosition.y - this.y
       ).normalize();
@@ -320,7 +319,7 @@ class BubbleLauncher extends GameObjects.Container {
     this.touchPosition = null;
   }
 
-  startTracing(pointer: Input.Pointer) {
+  startTracing(pointer: Phaser.Input.Pointer) {
     if (!this.currentBubble) {
       return;
     }
@@ -351,16 +350,16 @@ class BubbleLauncher extends GameObjects.Container {
     }
   }
 
-  trace(pointer: Input.Pointer): void {
+  trace(pointer: Phaser.Input.Pointer): void {
     const x = this.x - pointer.x;
     const y = this.y - pointer.y;
-    const vectorPointer = new PhaserMath.Vector2(x, y);
+    const vectorPointer = new Phaser.Math.Vector2(x, y);
     const direction = vectorPointer.clone().normalize();
     this.pointerLength = vectorPointer.length();
     this.isFlip = y < 90;
 
     // set arrow and lines
-    this.arrow.setAngle(direction.angle() * PhaserMath.RAD_TO_DEG + (this.isFlip ? 90 : -90));
+    this.arrow.setAngle(direction.angle() * Phaser.Math.RAD_TO_DEG + (this.isFlip ? 90 : -90));
     this.arrow.setAlpha(this.isFlip ? 1 : 0);
     this.pointerLine.setTo(
       this.x,

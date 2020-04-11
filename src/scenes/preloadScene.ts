@@ -1,8 +1,7 @@
-import { Scene } from "phaser";
 import options from "../options";
 import LoadingProgress from "../objects/ui/loadingProgress";
 
-class PreloadScene extends Scene {
+class PreloadScene extends Phaser.Scene {
   constructor() {
     super({
       key: "PreloadScene"

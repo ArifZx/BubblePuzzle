@@ -1,17 +1,15 @@
-import { GameObjects, Time, Scene } from "phaser"
-
-class Counter extends GameObjects.Container {
+class Counter extends Phaser.GameObjects.Container {
   counter: number;
-  counterText: GameObjects.Text;
-  timerHandler: Time.TimerEvent;
+  counterText: Phaser.GameObjects.Text;
+  timerHandler: Phaser.Time.TimerEvent;
   callbackFunc: () => void;
   isTimesUp: boolean;
   isStarted: boolean;
 
-  private _scene: Scene;
+  private _scene: Phaser.Scene;
   private _initTime: number;
 
-  constructor(scene: Scene, x: number, y: number, seconds = 30) {
+  constructor(scene: Phaser.Scene, x: number, y: number, seconds = 30) {
     const _seconds = Math.min(seconds, 99);
     const counterText = scene.add.text(x, y, `${_seconds}s`, {
       color: "#FFF",

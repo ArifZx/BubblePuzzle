@@ -1,27 +1,26 @@
-import { Physics, Scene, Sound, Math as PahserMath, Time, Cameras, Utils } from "phaser";
 import options from "../options";
 
-class Bubble extends Physics.Arcade.Sprite {
+class Bubble extends Phaser.Physics.Arcade.Sprite {
   context: Bubble;
   isSnaped: boolean;
   color: number;
   isPoped = false;
   isDroped = false;
   id: string;
-  colliders: Physics.Arcade.Collider[];
-  blopSFX: Sound.BaseSound;
-  snapPosition: PahserMath.Vector2;
-  snapEvent: Time.TimerEvent;
+  colliders: Phaser.Physics.Arcade.Collider[];
+  blopSFX: Phaser.Sound.BaseSound;
+  snapPosition: Phaser.Math.Vector2;
+  snapEvent: Phaser.Time.TimerEvent;
   row: number;
   column: number;
 
-  private _scene: Scene;
+  private _scene: Phaser.Scene;
   private _gameHeight: number;
   private _displayHeight: number;
-  private _mainCamera: Cameras.Scene2D.Camera;
-  private _outCameraHandler: Time.TimerEvent;
+  private _mainCamera: Phaser.Cameras.Scene2D.Camera;
+  private _outCameraHandler: Phaser.Time.TimerEvent;
 
-  constructor(scene: Scene, x: number, y: number) {
+  constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, options.bubble.texture.name);
     this._scene = scene;
     this._mainCamera = scene.cameras.main;
@@ -32,7 +31,7 @@ class Bubble extends Physics.Arcade.Sprite {
 
     this.colliders = [];
     this.isSnaped = false;
-    this.id = Utils.String.UUID();
+    this.id = Phaser.Utils.String.UUID();
     this.row = -1;
     this.column = -1;
     this.name = this.id;
@@ -55,7 +54,7 @@ class Bubble extends Physics.Arcade.Sprite {
       callbackScope: this,
       callback: () => {
         if (this.isDroped && !this._outCameraHandler && this._mainCamera && !this._mainCamera.cull([this]).length) {
-          this._outCameraHandler = scene.time.delayedCall(PahserMath.Between(20, 100), () => this.pop());
+          this._outCameraHandler = scene.time.delayedCall(Phaser.Math.Between(20, 100), () => this.pop());
         }
       }
     });
@@ -111,7 +110,7 @@ class Bubble extends Physics.Arcade.Sprite {
     }
   }
 
-  addCollider(collider: Physics.Arcade.Collider) {
+  addCollider(collider: Phaser.Physics.Arcade.Collider) {
     this.colliders.push(collider);
   }
 
@@ -129,16 +128,16 @@ class Bubble extends Physics.Arcade.Sprite {
     }
   }
 
-  setSnapPosition(x: number | PahserMath.Vector2, y?: number) {
+  setSnapPosition(x: number | Phaser.Math.Vector2, y?: number) {
     if (this.snapEvent) {
       this.snapEvent.remove();
       this.snapEvent = undefined;
     }
 
     if (typeof x === "number") {
-      this.snapPosition = new PahserMath.Vector2(x, y);
+      this.snapPosition = new Phaser.Math.Vector2(x, y);
     } else {
-      this.snapPosition = new PahserMath.Vector2(x);
+      this.snapPosition = new Phaser.Math.Vector2(x);
     }
 
     this.setX(this.snapPosition.x);
@@ -187,7 +186,7 @@ class Bubble extends Physics.Arcade.Sprite {
       this.context.setGravityY(500);
       if (withPop) {
         this.context.scene.time.addEvent({
-          delay: PahserMath.Between(200, 500),
+          delay: Phaser.Math.Between(200, 500),
           callback: () => {
             this.context.pop();
           },

@@ -1,14 +1,15 @@
-import { Types, Scale, Game } from "phaser"
+import "phaser"
+
 import PreloadScene from "./scenes/preloadScene";
 import GameScene from "./scenes/gameScene";
 import MenuScene from "./scenes/menuScene";
 
-const config: Types.Core.GameConfig = {
+const config: Phaser.Types.Core.GameConfig = {
   title: "Puzzle Bubble",
   scale: {
     parent: "game",
-    mode: Scale.FIT,
-    autoCenter: Scale.CENTER_HORIZONTALLY,
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_HORIZONTALLY,
     width: 720,
     height: 1300
   },
@@ -23,13 +24,13 @@ const config: Types.Core.GameConfig = {
   scene: [PreloadScene, MenuScene, GameScene],
 }
 
-let game: Game;
+let game: Phaser.Game;
 
-class BubblePuzzleGame extends Game {
+class BubblePuzzleGame extends Phaser.Game {
 
   global: any;
 
-  constructor(config: Types.Core.GameConfig) {
+  constructor(config: Phaser.Types.Core.GameConfig) {
     super(config);
 
     this.global = {
@@ -53,6 +54,9 @@ window.onload = () => {
 }
 
 // RUN GAME after 100ms
-// setTimeout(() => {
-//   startGame();
-// }, 100);
+setTimeout(() => {
+  startGame();
+}, 100);
+
+// @ts-ignore
+// global.Phaser = require("phaser");

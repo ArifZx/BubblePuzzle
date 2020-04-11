@@ -1,15 +1,14 @@
-import { Scene, GameObjects, Math as PhaserMath } from "phaser"
 
-class Scoreboard extends GameObjects.Container {
+class Scoreboard extends Phaser.GameObjects.Container {
   score: number;
-  scoreText: GameObjects.Text;
+  scoreText: Phaser.GameObjects.Text;
 
-  private _scene: Scene;
+  private _scene: Phaser.Scene;
   private _renderScore: number;
 
-  constructor(scene: Scene, x: number, y: number, score?: number) {
+  constructor(scene: Phaser.Scene, x: number, y: number, score?: number) {
 
-    const scoreText = new GameObjects.Text(scene, x, y, "Score: 0", {
+    const scoreText = new Phaser.GameObjects.Text(scene, x, y, "Score: 0", {
       color: "#FFF",
       fontSize: "64px",
       align: "center"
@@ -27,7 +26,7 @@ class Scoreboard extends GameObjects.Container {
       callbackScope: this,
       callback: () => {
         if (this._renderScore != this.score) {
-          this._renderScore = Math.ceil(PhaserMath.Linear(this._renderScore, this.score, 0.5));
+          this._renderScore = Math.ceil(Phaser.Math.Linear(this._renderScore, this.score, 0.5));
           this.scoreText.setText(`Score: ${this._renderScore}`);
         }
       }

@@ -1,7 +1,6 @@
-import { Scene } from "phaser"
 import LevelPanel from "../objects/ui/panel/levelPanel";
 
-export default class MenuScene extends Scene {
+export default class MenuScene extends Phaser.Scene {
   constructor() {
     super({
       key: "MenuScene"

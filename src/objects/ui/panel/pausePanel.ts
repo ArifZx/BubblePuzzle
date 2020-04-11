@@ -1,21 +1,20 @@
-import { Scene, GameObjects } from "phaser"
 import RectButton from "../base/rectButton";
 
-export default class PausePanel extends GameObjects.Container {
-  panel: GameObjects.Rectangle;
-  title: GameObjects.Text;
+export default class PausePanel extends Phaser.GameObjects.Container {
+  panel: Phaser.GameObjects.Rectangle;
+  title: Phaser.GameObjects.Text;
   resumeButton: RectButton;
   soundButton: RectButton;
   isMuted: boolean;
 
-  private _scene: Scene;
+  private _scene: Phaser.Scene;
 
-  constructor(scene: Scene, x: number, y: number) {
+  constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y);
     this._scene = scene;
     this.isMuted = scene.sound.volume <= 0;
 
-    this.panel = new GameObjects.Rectangle(
+    this.panel = new Phaser.GameObjects.Rectangle(
       scene,
       0,
       0,
@@ -25,7 +24,7 @@ export default class PausePanel extends GameObjects.Container {
     );
     this.panel.setOrigin(0.5, 0);
 
-    this.title = new GameObjects.Text(scene, 0, 0, "Paused", {
+    this.title = new Phaser.GameObjects.Text(scene, 0, 0, "Paused", {
       fontSize: "64px"
     });
     this.title.setOrigin(0.5, 0);

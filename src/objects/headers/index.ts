@@ -1,17 +1,16 @@
-import { Scene, GameObjects } from "phaser"
 import Scoreboard from "./scoreboard";
 import Counter from "./counter";
 import PauseButton from "./pauseButton";
 
-class Header extends GameObjects.Rectangle {
+class Header extends Phaser.GameObjects.Rectangle {
 
   scoreboard: Scoreboard;
   counter: Counter;
   pausedButton: PauseButton;
 
-  private _scene: Scene;
+  private _scene: Phaser.Scene;
 
-  constructor(scene: Scene, x: number, y: number) {
+  constructor(scene: Phaser.Scene, x: number, y: number) {
     const { width, height } = scene.game.config;
     super(scene, x, y, (width as number), 90, 0x314463);
     this._scene = scene;

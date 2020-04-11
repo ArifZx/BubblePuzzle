@@ -1,8 +1,6 @@
-import { GameObjects, Scene, Loader } from "phaser"
+export default class LoadingProgress extends Phaser.GameObjects.Container {
 
-export default class LoadingProgress extends GameObjects.Container {
-
-  constructor(scene: Scene, x: number, y: number, width = 400, height = 100) {
+  constructor(scene: Phaser.Scene, x: number, y: number, width = 400, height = 100) {
     super(scene, x, y);
     this.setSize(width, height);
 
@@ -11,26 +9,26 @@ export default class LoadingProgress extends GameObjects.Container {
     const progressX = (this.width - progressWidth) * 0.5;
     const progressY = (this.height * 0.5) - progressHeight * 0.5;
 
-    const progressBar = new GameObjects.Graphics(scene);
-    const progressBox = new GameObjects.Graphics(scene);
+    const progressBar = new Phaser.GameObjects.Graphics(scene);
+    const progressBox = new Phaser.GameObjects.Graphics(scene);
     progressBox.fillStyle(0x222222, 0.8);
     progressBox.fillRect(progressX, progressY, progressWidth, progressHeight);
 
-    const loadingText = new GameObjects.Text(scene, this.width * 0.5, 0, "Loading...", {
+    const loadingText = new Phaser.GameObjects.Text(scene, this.width * 0.5, 0, "Loading...", {
       fontSize: "20px",
       color: "#ffffff",
       fontFamily: "monospace"
     });
     loadingText.setOrigin(0.5, 0.5);
 
-    const percentText = new GameObjects.Text(scene, this.width * 0.5, this.height * 0.5, "0%", {
+    const percentText = new Phaser.GameObjects.Text(scene, this.width * 0.5, this.height * 0.5, "0%", {
       fontSize: "18px",
       color: "#ffffff",
       fontFamily: "monospace"
     });
     percentText.setOrigin(0.5, 0.5);
 
-    const assetText = new GameObjects.Text(scene, this.width * 0.5, this.height, "", {
+    const assetText = new Phaser.GameObjects.Text(scene, this.width * 0.5, this.height, "", {
       fontSize: "18px",
       color: "#ffffff",
       fontFamily: "monospace"
@@ -44,7 +42,7 @@ export default class LoadingProgress extends GameObjects.Container {
       progressBar.fillRect(progressX + 10, progressY + 10, (progressWidth - 20) * value, 30);
     });
 
-    scene.load.on('fileprogress', function (file: Loader.File) {
+    scene.load.on('fileprogress', function (file: Phaser.Loader.File) {
       assetText.setText('Loading asset: ' + file.key);
     });
 
@@ -60,6 +58,7 @@ export default class LoadingProgress extends GameObjects.Container {
 
     this.add([progressBox, progressBar, loadingText, percentText, assetText]);
 
+    // @ts-ignore
     scene.add.existing(this);
   }
 

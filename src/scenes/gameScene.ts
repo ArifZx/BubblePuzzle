@@ -134,8 +134,7 @@ class GameScene extends Phaser.Scene {
         const bubble = this.puzzle.getBubbleByRowCol(rowCol);
         if (bubble) {
           this.puzzle.snapBubble(bubble, null, 1, true);
-          console.log(this.puzzle.getBubbleRowCol(bubble));
-          console.log(bubble);
+          console.log(this.puzzle.getBubbleRowCol(bubble), bubble.x, bubble.y);
         }
       },
       this

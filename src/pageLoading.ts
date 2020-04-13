@@ -16,5 +16,3 @@ const loadingHandler = setInterval(() => {
   }
   counter++;
 }, 1000);
-
-console.log("OKE")

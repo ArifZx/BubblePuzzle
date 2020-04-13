@@ -3,7 +3,7 @@ const options = {
     color: [0x3B3433, 0xff0000, 0x0000ff, 0x00ff00, 0xffffff, 0xffff00, 0xff00ff],
     texture: {
       name: "bubble",
-      location: "assets/bubblesprite.png",
+      location: require("./assets/bubblesprite.png").default,
       height: 180,
       width: 1080,
     },
@@ -13,14 +13,14 @@ const options = {
     sfx: {
       blop: {
         name: "blop_sfx",
-        location: "assets/audio/blop.mp3",
+        location: require("./assets/audio/blop.mp3").default,
       }
     }
   },
   arrow: {
     texture: {
       name: "arrow",
-      location: "assets/arrow.png",
+      location: require("./assets/arrow.png").default,
       height: 300,
       width: 300,
     }
@@ -29,7 +29,7 @@ const options = {
     sfx: {
       splat: {
         name: "splat_sfx",
-        location: "assets/audio/splat.mp3"
+        location: require("./assets/audio/splat.mp3").default
       }
     }
   },
@@ -37,14 +37,14 @@ const options = {
     loop: {
       backsound: {
         name: "backsound",
-        location: ["assets/audio/music.mp3", "assets/audio/music.ogg"]
+        location: [require("./assets/audio/music.mp3").default, require("./assets/audio/music.ogg").default]
       }
     }
   },
   panel: {
     texture: {
       name: "panel",
-      location: "assets/panel.png",
+      location: require("./assets/panel.png").default,
       width: 500,
       height: 362
     }
@@ -52,7 +52,7 @@ const options = {
   restartButton: {
     texture: {
       name: "restart-button",
-      location: "assets/replay.png",
+      location: require("./assets/replay.png").default,
       width: 230,
       height: 218
     }
@@ -60,7 +60,7 @@ const options = {
   pausedButton: {
     texture: {
       name: "paused-button",
-      location: "assets/pause.png",
+      location: require("./assets/pause.png").default,
       width: 50,
       height: 50
     }

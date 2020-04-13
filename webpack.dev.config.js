@@ -2,7 +2,6 @@
 
 const webpack = require("webpack");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
-const TerserPlugin = require("terser-webpack-plugin");
 const path = require("path");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
 const ScriptExtHtmlWebpackPlugin = require("script-ext-html-webpack-plugin");
@@ -12,7 +11,6 @@ module.exports = {
     game: path.resolve(__dirname, "src/app.ts"),
     pageLoading: path.resolve(__dirname, "src/pageLoading.ts"),
   },
-  devtool: "source-map",
   externals: {
     phaser: {
       root: "phaser",
@@ -48,10 +46,10 @@ module.exports = {
     extensions: [".ts", ".tsx", ".js"],
   },
   output: {
-    filename: "[name].[contenthash].js",
+    filename: "[name].js",
     path: path.resolve(__dirname, "dist"),
   },
-  mode: "production",
+  mode: "development",
   plugins: [
     new webpack.DefinePlugin({
       "typeof CANVAS_RENDERER": JSON.stringify(true),
@@ -61,7 +59,6 @@ module.exports = {
       "typeof PLUGIN_FBINSTANT": JSON.stringify(false),
     }),
     new CleanWebpackPlugin(),
-    new TerserPlugin(),
     new HTMLWebpackPlugin({
       title: "Bubble Puzzle",
       template: path.resolve(__dirname, "src/index.html"),
@@ -72,29 +69,4 @@ module.exports = {
       defer: ["game"],
     }),
   ],
-  optimization: {
-    splitChunks: {
-      // include all types of chunks
-      chunks: "all",
-    },
-    minimizer: [
-      new TerserPlugin({
-        warningsFilter: () => false,
-        minify: (file, sourceMap) => {
-          const extractedComments = [];
-
-          const { error, map, code, warnings } = require("uglify-js") // Or require('./path/to/uglify-module')
-            .minify(file, {
-              compress: true,
-              ie8: false,
-              output: { comments: false },
-              warnings: false,
-              mangle: true,
-            });
-
-          return { error, map, code, warnings, extractedComments };
-        },
-      }),
-    ],
-  },
 };

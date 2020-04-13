@@ -9,8 +9,8 @@ const ScriptExtHtmlWebpackPlugin = require("script-ext-html-webpack-plugin");
 
 module.exports = {
   entry: {
-    game: path.resolve(__dirname, "src/app.ts"),
     pageLoading: path.resolve(__dirname, "src/pageLoading.ts"),
+    game: path.resolve(__dirname, "src/app.ts"),
   },
   devtool: "source-map",
   externals: {

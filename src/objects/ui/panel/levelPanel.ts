@@ -20,6 +20,8 @@ export default class LevelPanel extends Phaser.GameObjects.Container {
     });
     this.titleText.setOrigin(0.5);
 
+    this.name = Phaser.Utils.String.UUID();
+
     this.scoreText = new Phaser.GameObjects.Text(scene, 0, 0, `Your score: ${this.score}`, {
       fontSize: "24px",
       align: "center",
@@ -36,7 +38,6 @@ export default class LevelPanel extends Phaser.GameObjects.Container {
     this.add(this.scoreText);
 
     this.setSize(width || 300, height || 250);
-    scene.add.existing(this);
   }
 
   setSize(width: number, height: number) {

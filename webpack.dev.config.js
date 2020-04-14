@@ -7,9 +7,14 @@ const HTMLWebpackPlugin = require("html-webpack-plugin");
 const ScriptExtHtmlWebpackPlugin = require("script-ext-html-webpack-plugin");
 
 module.exports = {
+  devServer: {
+    // host: "0.0.0.0",
+    disableHostCheck: true,
+    port: 8085,
+  },
   entry: {
-    game: path.resolve(__dirname, "src/app.ts"),
     pageLoading: path.resolve(__dirname, "src/pageLoading.ts"),
+    game: path.resolve(__dirname, "src/app.ts"),
   },
   externals: {
     phaser: {
@@ -46,7 +51,7 @@ module.exports = {
     extensions: [".ts", ".tsx", ".js"],
   },
   output: {
-    filename: "[name].js",
+    filename: "[name].[hash].js",
     path: path.resolve(__dirname, "dist"),
   },
   mode: "development",

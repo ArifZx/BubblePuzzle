@@ -18,11 +18,15 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
   middleY: number;
 
   // pointer scroll
+  velocity: number;
+  deceleraction: number;
   scrollX: number;
   canSroll: boolean;
+  isStartTouch: boolean;
 
   maxLevel: number;
   releaseEvent: Phaser.Time.TimerEvent;
+  scrollEvent: Phaser.Time.TimerEvent;
 
   private _initScrollX: number;
   private _currentScrollX: number;
@@ -45,7 +49,7 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
     this.canSroll = false;
 
     const _width = width || (scene.game.config.width as number);
-    const _height = Math.max(250, height);
+    const _height = Math.max(350, height);
     this.setSize(_width, _height);
 
     this.maxLevel = 100;
@@ -53,6 +57,8 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
     this.middleX = _width * 0.5;
     this.middleY = _height * 0.5;
     this.scrollX = this.middleX;
+    this.velocity = 0;
+    this.deceleraction = 30;
     this._currentScrollX = this.scrollX;
     this._leftBound = this.middleX;
     this._rightBound = this._leftBound;
@@ -61,12 +67,12 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
     // setup touchpad
     this.touchPad = new Phaser.GameObjects.Rectangle(
       scene,
-      1,
+      8,
       0,
-      _width - 2,
+      _width - 16,
       _height,
       0xffffff,
-      0
+      0.2
     );
     this.touchPad.setOrigin(0, 0);
     this.setTouchPadInteractive();
@@ -117,9 +123,25 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
     if (this._currentScrollX.toFixed(1) !== this.scrollX.toFixed(1)) {
       this._isOnTarget = false;
       this.updatePanelPosition();
-    } else if (!this._isOnTarget) {
+    } else if (!this._isOnTarget && !this.canSroll) {
       this._isOnTarget = true;
       this.eventOnTargetPosition();
+    }
+
+    if (this.canSroll) {
+      this.velocity = 0;
+    }
+
+    if (this.velocity > 0) {
+      this.velocity = Math.max(0, this.velocity - this.deceleraction);
+    } else if (this.velocity < 0) {
+      this.velocity = Math.min(0, this.velocity + this.deceleraction);
+    } else {
+      this.velocity = 0;
+    }
+
+    if (!this.canSroll) {
+      this.setScrollX(this.scrollX + this.velocity)
     }
   }
 
@@ -171,11 +193,14 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
     }
   }
 
+  startTime: number;
+
   setTouchPadInteractive(active = true) {
     if (!active) {
       this.touchPad.removeInteractive();
       return this;
     }
+
 
     this.touchPad
       .setInteractive()
@@ -188,13 +213,13 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
       .on(
         "pointerup",
         (pointer: Phaser.Input.Pointer, localX: number, localY: number) => {
-          this.releaseScroll();
+          this.releaseScroll(pointer.position);
         }
       )
       .on(
         "pointerout",
         (pointer: Phaser.Input.Pointer, localX: number, localY: number) => {
-          this.releaseScroll();
+          this.releaseScroll(pointer.position);
         }
       )
       .on(
@@ -213,6 +238,8 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
   }
 
   eventOnTargetPosition() {
+    this.checkCurrentPanel();
+    this.snapPosition();
     this.autoAddLevel();
     this.emit("targetPosition", this.currentPanel);
   }
@@ -234,12 +261,6 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
     }
   }
 
-  startScroll(position: Phaser.Math.Vector2) {
-    this.canSroll = true;
-    this.startTouchPos = position.clone();
-    this._initScrollX = this._currentScrollX;
-  }
-
   snapPosition(level?: LevelPanel) {
     const panel = level || this.currentPanel;
     this.setScrollX(
@@ -249,8 +270,28 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
     );
   }
 
-  releaseScroll() {
-    this.canSroll = false;
+  startScroll(position: Phaser.Math.Vector2) {
+    this.isStartTouch = true;
+
+    this.startTouchPos = position.clone();
+    this._initScrollX = this._currentScrollX;
+
+    this.startTime = Date.now();
+
+    this.scrollEvent && this.scrollEvent.remove();
+    this.scrollEvent = this._scene.time.delayedCall(500, () => {
+      this.canSroll = true;
+    }, null, this);
+  }
+
+  releaseScroll(position: Phaser.Math.Vector2) {
+    this.scrollEvent && this.scrollEvent.remove();
+
+    if (this.isStartTouch && !this.canSroll) {
+      const endTouchPos = position.clone();
+      const vectorX = endTouchPos.x - this.startTouchPos.x;
+      this.velocity += vectorX * 2;
+    }
 
     this.releaseEvent && this.releaseEvent.remove();
     this.releaseEvent = this._scene.time.delayedCall(
@@ -259,6 +300,10 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
       null,
       this
     );
+
+
+    this.canSroll = false;
+    this.isStartTouch = false;
   }
 
   setScrollX(value: number) {

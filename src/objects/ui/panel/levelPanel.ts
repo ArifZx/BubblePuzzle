@@ -9,16 +9,18 @@ export default class LevelPanel extends Phaser.GameObjects.Container {
   score: number;
   star: number;
 
+  padding = 16;
+
   constructor(scene: Phaser.Scene, x?: number, y?: number, width?: number, height?: number, level?: number, score?: number) {
     super(scene, x, y);
     this.level = level || 1;
     this.score = score || 0;
     this.titleText = new Phaser.GameObjects.Text(scene, 0, 0, `Level ${this.level}`, {
-      fontSize: "64px",
+      fontSize: "48px",
       align: "center",
       color: "#ffffff",
     });
-    this.titleText.setOrigin(0.5);
+    this.titleText.setOrigin(0.5, 1);
 
     this.name = Phaser.Utils.String.UUID();
 
@@ -27,7 +29,7 @@ export default class LevelPanel extends Phaser.GameObjects.Container {
       align: "center",
       color: "#ffffff"
     });
-    this.scoreText.setOrigin(0.5);
+    this.scoreText.setOrigin(0.5, 0);
 
     this.rect = new Phaser.GameObjects.Rectangle(scene, 0, 0);
     this.rect.setFillStyle(0xf12398, 1);
@@ -37,7 +39,7 @@ export default class LevelPanel extends Phaser.GameObjects.Container {
     this.add(this.titleText);
     this.add(this.scoreText);
 
-    this.setSize(width || 300, height || 250);
+    this.setSize(width || 300, height || 200);
   }
 
   setSize(width: number, height: number) {
@@ -75,7 +77,7 @@ export default class LevelPanel extends Phaser.GameObjects.Container {
   private updateChildPosition() {
     const { width, height } = this;
 
-    this.titleText && this.titleText.setPosition(width * 0.5, height * 0.2);
-    this.scoreText && this.scoreText.setPosition(width * 0.5, height * 0.25 + 64)
+    this.titleText && this.titleText.setPosition(width * 0.5, height * 0.5);
+    this.scoreText && this.scoreText.setPosition(width * 0.5, height * 0.5 + this.padding);
   }
 }

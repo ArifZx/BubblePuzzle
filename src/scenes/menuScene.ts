@@ -18,6 +18,10 @@ export default class MenuScene extends Phaser.Scene {
 
     const scroller = new LevelScroller(this, 0, h * 0.5 - 150);
     this.add.existing(scroller);
+
+    // this.time.delayedCall(5000, () => {
+    //   scroller.setScrollTo(92);
+    // })
   }
 
   init(data: object) {

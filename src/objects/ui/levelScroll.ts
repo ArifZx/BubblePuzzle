@@ -1,24 +1,34 @@
 import LevelPanel from "./panel/levelPanel";
 
 export default class LevelScroller extends Phaser.GameObjects.Container {
+  // group of level panel
   panelGroup: Phaser.GameObjects.Group;
-  currentPanel: LevelPanel;
 
+  // middle panel
+  currentPanel: LevelPanel;
+  currentPanelScale = 1.3;
+  panelGap = 72;
+
+  // Interaction pad
   touchPad: Phaser.GameObjects.Rectangle;
   startTouchPos: Phaser.Math.Vector2;
 
+  // the middle position of level scroll
   middleX: number;
   middleY: number;
 
+  // pointer scroll
   scrollX: number;
   canSroll: boolean;
 
+  maxLevel: number;
   releaseEvent: Phaser.Time.TimerEvent;
 
   private _initScrollX: number;
   private _currentScrollX: number;
   private _leftBound: number;
   private _rightBound: number;
+  private _isOnTarget: boolean;
 
   private _scene: Phaser.Scene;
 
@@ -27,7 +37,8 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
     x: number,
     y: number,
     width = 0,
-    height = 0
+    height = 0,
+    initLevel = 30,
   ) {
     super(scene, x, y);
     this._scene = scene;
@@ -37,18 +48,22 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
     const _height = Math.max(250, height);
     this.setSize(_width, _height);
 
+    this.maxLevel = 100;
+
     this.middleX = _width * 0.5;
     this.middleY = _height * 0.5;
     this.scrollX = this.middleX;
     this._currentScrollX = this.scrollX;
     this._leftBound = this.middleX;
     this._rightBound = this._leftBound;
+    this._isOnTarget = true;
 
+    // setup touchpad
     this.touchPad = new Phaser.GameObjects.Rectangle(
       scene,
-      5,
+      1,
       0,
-      _width - 10,
+      _width - 2,
       _height,
       0xffffff,
       0
@@ -57,19 +72,24 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
     this.setTouchPadInteractive();
     this.add(this.touchPad);
 
+    // setup panel group
     this.panelGroup = new Phaser.GameObjects.Group(scene, {
       createCallback: (item: LevelPanel) => {
+        if (!this.currentPanel) {
+          this.currentPanel = item;
+          item.setScale(this.currentPanelScale);
+        }
+
         this.remove(this.touchPad);
         this.add(item);
         this.updatePanelPosition();
         this.add(this.touchPad);
+
         if (this.panelGroup.getLength() > 1) {
-          this._rightBound = Math.min(0, this._leftBound - item.x + 60 + 150);
+          this._rightBound = Math.min(0, this._currentScrollX - (item.x + this.currentPanel.displayWidth * 0.5) + this.panelGap);
         }
 
-        if (!this.currentPanel) {
-          this.currentPanel = item;
-        }
+
       },
       removeCallback: (item) => {
         this.remove(item);
@@ -84,17 +104,70 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
       },
     });
 
-    const n = 10;
-    for (let i = 0; i < n; i++) {
+    // init panel
+    for (let i = 0; i < initLevel; i++) {
       const panel = new LevelPanel(scene);
       panel.setLevel(i + 1);
       this.panelGroup.add(panel);
     }
+
   }
 
   preUpdate() {
     if (this._currentScrollX.toFixed(1) !== this.scrollX.toFixed(1)) {
+      this._isOnTarget = false;
       this.updatePanelPosition();
+    } else if (!this._isOnTarget) {
+      this._isOnTarget = true;
+      this.eventOnTargetPosition();
+    }
+  }
+
+  setCurrentLevel(level: number | LevelPanel) {
+    if (this.currentPanel) {
+      this.currentPanel.setScale(1);
+    }
+
+    let panel: LevelPanel;
+    if (typeof level === "number") {
+      const _level = Math.min(level, this.maxLevel);
+      const children = this.panelGroup.getChildren() as LevelPanel[];
+      const levelPanel = children[Phaser.Math.Clamp(_level - 1, 0, children.length - 1)];
+
+      if (levelPanel.level === _level) {
+        panel = levelPanel;
+      } else {
+        for (let i = 0; i < children.length; i++) {
+          if (children[i].level === _level) {
+            panel = children[i];
+            break;
+          }
+        }
+      }
+    } else if (this.panelGroup.contains(panel)) {
+      panel = level;
+    }
+
+    if (panel) {
+      panel.setScale(this.currentPanelScale);
+      this.currentPanel = panel;
+    }
+
+    return this;
+  }
+
+  addLevel(number: number, lastPanel?: LevelPanel) {
+    const last: LevelPanel = lastPanel || this.panelGroup.getLast(true);
+    let startLevel = last.level + 1;
+    for (let i = 0; i < 3; i++) {
+
+      if (i + startLevel > this.maxLevel) {
+        break;
+      }
+
+      const newPanel = new LevelPanel(this._scene);
+      newPanel.setLevel(i + startLevel);
+      this.panelGroup.add(newPanel);
     }
   }
 
@@ -129,7 +202,7 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
         (pointer: Phaser.Input.Pointer, localX: number, localY: number) => {
           if (this.canSroll) {
             this.setScrollX(
-              this._initScrollX + (pointer.x - this.startTouchPos.x)
+              this._initScrollX + (pointer.x - this.startTouchPos.x) * 3
             );
             this.checkCurrentPanel();
           }
@@ -139,10 +212,25 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
     return this;
   }
 
+  eventOnTargetPosition() {
+    this.autoAddLevel();
+    this.emit("targetPosition", this.currentPanel);
+  }
+
   checkCurrentPanel() {
     const middlePanel = this.getMiddlePanel();
-    if (this.currentPanel.name !== middlePanel.name) {
+    if (this.currentPanel && this.currentPanel.name !== middlePanel.name) {
+      this.currentPanel.setScale(1);
+      middlePanel.setScale(this.currentPanelScale);
       this.currentPanel = middlePanel;
+      this.autoAddLevel();
+    }
+  }
+
+  autoAddLevel() {
+    const last: LevelPanel = this.panelGroup.getLast(true);
+    if (last.level - this.level < 10) {
+      this.addLevel(3, last);
     }
   }
 
@@ -152,10 +240,11 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
     this._initScrollX = this._currentScrollX;
   }
 
-  snapPosition() {
+  snapPosition(level?: LevelPanel) {
+    const panel = level || this.currentPanel;
     this.setScrollX(
       Math.round(
-        this._currentScrollX - (this.currentPanel.x + 150 - this.middleX)
+        this._currentScrollX - (panel.x + this.currentPanel.displayWidth * 0.5 - this.middleX)
       )
     );
   }
@@ -165,7 +254,7 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
 
     this.releaseEvent && this.releaseEvent.remove();
     this.releaseEvent = this._scene.time.delayedCall(
-      100,
+      200,
       () => this.snapPosition(),
       null,
       this
@@ -177,29 +266,31 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
   }
 
   setScrollTo(level: number) {
-    const children = this.panelGroup.getChildren() as LevelPanel[];
-    const levelPanel = children[Math.max(0, level - 1)];
 
-    if (levelPanel.level === level) {
-      this.currentPanel = levelPanel;
-      this.setScrollX(
-        Math.round(
-          this._currentScrollX - (this.currentPanel.x + 150 - this.middleX)
-        )
-      );
-      return this;
+    const last: LevelPanel = this.panelGroup.getLast(true);
+    const distance = Math.max(0, level - last.level);
+    const addLevel = 1;
+    const loop = Math.ceil(distance / addLevel);
+    for (let i = 0; i < loop; i++) {
+
+      this._scene.time.delayedCall(i * 200, () => {
+        this.addLevel(addLevel);
+
+        if (i === loop - 1) {
+          this.setCurrentLevel(level);
+          this.snapPosition();
+        } else {
+          const newLast: LevelPanel = this.panelGroup.getLast(true);
+          if (newLast.level < level) {
+            this.snapPosition(newLast);
+          }
+        }
+      }, null, this);
     }
 
-    for (let i = 0; i < children.length; i++) {
-      if (children[i].level === level) {
-        this.currentPanel = children[i];
-        this.setScrollX(
-          Math.round(
-            this._currentScrollX - (this.currentPanel.x + 150 - this.middleX)
-          )
-        );
-        return this;
-      }
+    if (!loop) {
+      this.setCurrentLevel(level);
+      this.snapPosition();
     }
 
     return this;
@@ -232,10 +323,27 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
       this.scrollX,
       0.6
     );
-    this.panelGroup.setXY(
-      -150 + this._currentScrollX,
-      this.middleY - 125,
-      300 + 60
-    );
+
+    if (this.currentPanel) {
+      this.panelGroup.setXY(
+        this._currentScrollX - this.currentPanel.displayWidth * 0.5,
+        this.middleY - this.currentPanel.displayHeight * 0.5,
+        this.currentPanel.displayWidth + this.panelGap
+      );
+
+      this.panelGroup.getChildren().forEach((panel: LevelPanel) => {
+        if (panel.level < this.level) {
+          panel.setPosition(panel.x + panel.displayWidth * (this.currentPanel.scaleX - panel.scaleX), this.middleY - panel.displayHeight * 0.5);
+        } else if (panel.level > this.level) {
+          panel.setPosition(panel.x, this.middleY - panel.displayHeight * 0.5);
+        } else {
+          panel.setPosition(panel.x, this.middleY - panel.displayHeight * 0.5);
+        }
+      })
+    }
+  }
+
+  get level() {
+    return this.currentPanel && this.currentPanel.level || 0
   }
 }

@@ -95,6 +95,7 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
           this._rightBound = Math.min(0, this._currentScrollX - (item.x + this.currentPanel.displayWidth * 0.5) + this.panelGap);
         }
 
+        this.emit("createLevel", item);
 
       },
       removeCallback: (item) => {
@@ -227,7 +228,7 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
         (pointer: Phaser.Input.Pointer, localX: number, localY: number) => {
           if (this.canSroll) {
             this.setScrollX(
-              this._initScrollX + (pointer.x - this.startTouchPos.x) * 3
+              this._initScrollX + (pointer.x - this.startTouchPos.x) * 5
             );
             this.checkCurrentPanel();
           }
@@ -279,7 +280,7 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
     this.startTime = Date.now();
 
     this.scrollEvent && this.scrollEvent.remove();
-    this.scrollEvent = this._scene.time.delayedCall(500, () => {
+    this.scrollEvent = this._scene.time.delayedCall(333, () => {
       this.canSroll = true;
     }, null, this);
   }
@@ -289,8 +290,8 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
 
     if (this.isStartTouch && !this.canSroll) {
       const endTouchPos = position.clone();
-      const vectorX = endTouchPos.x - this.startTouchPos.x;
-      this.velocity += vectorX * 2;
+      const vectorX = (endTouchPos.x - this.startTouchPos.x) / ((Date.now() - this.startTime) * 0.005);
+      this.velocity += Phaser.Math.Clamp(vectorX, -350, 350) * 3;
     }
 
     this.releaseEvent && this.releaseEvent.remove();
@@ -366,7 +367,7 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
     this._currentScrollX = Phaser.Math.Linear(
       this._currentScrollX,
       this.scrollX,
-      0.6
+      0.666
     );
 
     if (this.currentPanel) {

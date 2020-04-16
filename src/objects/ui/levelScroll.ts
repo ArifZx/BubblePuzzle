@@ -126,7 +126,6 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
       this.updatePanelPosition();
     } else if (!this._isOnTarget && !this.canSroll) {
       this._isOnTarget = true;
-      this.updatePanelPosition();
       this.eventOnTargetPosition();
     }
 
@@ -243,6 +242,7 @@ export default class LevelScroller extends Phaser.GameObjects.Container {
     this.checkCurrentPanel();
     this.snapPosition();
     this.autoAddLevel();
+    this.updatePanelPosition();
     this.emit("targetPosition", this.currentPanel);
   }
 

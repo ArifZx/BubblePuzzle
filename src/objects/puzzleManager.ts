@@ -212,13 +212,6 @@ class PuzzleManager extends Phaser.GameObjects.Container {
         this
       );
     }
-
-    if (this.launchBubbleRowCol) {
-      const rowCol = this.launchBubbleRowCol;
-      const coord = this.getCoordinate(rowCol.row, rowCol.column);
-      bubble.setX(coord.x);
-      bubble.setY(coord.y);
-    }
   }
 
   /**

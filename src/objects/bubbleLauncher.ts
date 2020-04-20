@@ -174,7 +174,7 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
         // check each point has bubble in puzzle
         if (
           this.puzzle &&
-          this.puzzle.getBubbleByCoordinate(aimPoints[i].x, aimPoints[i].y)
+          this.puzzle.getBubbleByCoordinate(aimPoints[i].x, aimPoints[i].y, false)
         ) {
           break;
         }
@@ -215,7 +215,8 @@ class BubbleLauncher extends Phaser.GameObjects.Container {
             this.puzzle &&
             this.puzzle.getBubbleByCoordinate(
               reflectedPoints[i].x,
-              reflectedPoints[i].y
+              reflectedPoints[i].y,
+              false
             )
           ) {
             break;

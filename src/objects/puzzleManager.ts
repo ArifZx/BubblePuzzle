@@ -162,11 +162,11 @@ class PuzzleManager extends Phaser.GameObjects.Container {
       let rowCol: RowCol;
 
       if (neighbor) {
-        rowCol = this.getEmptyNeighbourRowCol(bubble.x, bubble.y, neighbor);
+        rowCol = this.getEmptyNeighbourRowCol(bubble.x, bubble.y, neighbor, false);
       }
 
       if (!rowCol) {
-        rowCol = this.getBubbleRowCol(bubble);
+        rowCol = this.getBubbleRowCol(bubble, false);
       }
 
       this.launchBubbleRowCol = rowCol;
@@ -259,8 +259,8 @@ class PuzzleManager extends Phaser.GameObjects.Container {
    * @param x
    * @param y
    */
-  getBubbleByCoordinate(x: number, y: number) {
-    const rowCol = this.getRowCol(x, y);
+  getBubbleByCoordinate(x: number, y: number, isChild = true) {
+    const rowCol = this.getRowCol(x, y, isChild);
     return this.getBubble(rowCol.row, rowCol.column);
   }
 
@@ -353,11 +353,11 @@ class PuzzleManager extends Phaser.GameObjects.Container {
     //   bubble.destroy();
     // }
 
+    this.add(newBubble);
     const coord = this.getCoordinate(row, column);
     newBubble.setRowCol(row, column);
     newBubble.setScale(this.bubbleScale);
     newBubble.setSnapPosition(coord);
-    this.add(newBubble);
     this.bubbles[row][column] = newBubble;
 
     return newBubble;
@@ -436,7 +436,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
    * @param y bubble y position
    * @param neighbor bubble's neighbour
    */
-  getEmptyNeighbourRowCol(x: number, y: number, neighbor: Bubble): RowCol {
+  getEmptyNeighbourRowCol(x: number, y: number, neighbor: Bubble, isChild = true): RowCol {
     let tempRowCol: RowCol;
     let minDistance = Number.MAX_VALUE;
     const { row, column } = this.getBubbleRowCol(neighbor);
@@ -473,8 +473,8 @@ class PuzzleManager extends Phaser.GameObjects.Container {
       ) {
         const nPos = this.getCoordinate(nRowCol.row, nRowCol.column);
         const distance = new Phaser.Math.Vector2(
-          nPos.x - x,
-          nPos.y - y
+          nPos.x - x + (!isChild ? -this.x : 0),
+          nPos.y - y + (!isChild ? -this.y : 0)
         ).length();
         if (distance <= minDistance) {
           minDistance = distance;
@@ -650,7 +650,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
    * Get bubble's row and column number
    * @param bubble
    */
-  getBubbleRowCol(bubble: Bubble): RowCol {
+  getBubbleRowCol(bubble: Bubble, isChild = true): RowCol {
     if (!bubble) {
       return { row: 0, column: 0 };
     }
@@ -659,7 +659,7 @@ class PuzzleManager extends Phaser.GameObjects.Container {
       return { row: bubble.row, column: bubble.column };
     }
 
-    return this.getRowCol(bubble.x, bubble.y);
+    return this.getRowCol(bubble.x, bubble.y, isChild);
   }
 
   checkCrossBorderLine(): boolean {
@@ -702,18 +702,20 @@ class PuzzleManager extends Phaser.GameObjects.Container {
    * @param x
    * @param y
    */
-  getRowCol(x: number, y: number): RowCol {
+  getRowCol(x: number, y: number, isChild = true): RowCol {
     let temp = { row: 0, column: 0 };
+    const _x = x + (!isChild ? -this.x : 0);
+    const _y = y + (!isChild ? -this.y : 0);
 
     temp.row = Math.min(
-      Math.round((y + this.tileHeight * 0.5 - this.y) / this.tileHeight - 1),
+      Math.round((_y + this.tileHeight * 0.5) / this.tileHeight - 1),
       this.rows
     );
 
-    const tempX = this.checkLongRow(temp.row) ? x - this.tileWidth * 0.5 : x;
+    const tempX = this.checkLongRow(temp.row) ? _x - this.tileWidth * 0.5 : _x;
 
     temp.column = Math.min(
-      Math.round((tempX + this.tileWidth * 0.5 - this.x) / this.tileWidth - 1),
+      Math.round((tempX + this.tileWidth * 0.5) / this.tileWidth - 1),
       this.columns
     );
 
